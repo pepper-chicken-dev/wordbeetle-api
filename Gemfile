@@ -31,6 +31,11 @@ gem "thruster", require: false
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
 # gem "rack-cors"
 
+# Google authentication library for ID token verification
+gem "googleauth"
+
+gem "openssl"
+
 group :development, :test do
   # Load environment variables from .env file
   gem "dotenv-rails"
