@@ -341,102 +341,107 @@ WordBeetleは、効率的な単語学習を実現する間隔反復学習機能�
 
 - 対応ブラウザ：Chrome、Firefox、Safari、Edge（最新版および1つ前のバージョン）
 
-## 4. データモデル概要
+## データモデル概要
 
-### 4.1 主要エンティティ
+### 優先度
+
+- **[P0] High Priority**: 必須。
+- **[P1] Medium Priority**: 初期リリース後、早い段階で実装する。
+- **[P2] Low Priority**: 余裕があれば実装する
+
+### エンティティ
 
 #### Users（ユーザ）
 
-- id
-- email
-- password_digest
-- username
-- profile_image_url
-- user_type（member / guest）
-- guest_expires_at（ゲストユーザの有効期限）
-- created_at
-- updated_at
+- [P0] id
+- [P0] email
+- [P0] name
+- [P0] avatar_url
+- [P0] provider（google / github / guestなど）
+- [P0] provider_uid（ゲストユーザの識別子も含む）
+- [P0] guest_expires_at（ゲストユーザの有効期限）
+- [P0] created_at
+- [P0] updated_at
 
 #### Wordbooks（単語帳）
 
-- id
-- user_id
-- title
-- description
-- category
-- color
-- is_public
-- created_at
-- updated_at
+- [P0] id
+- [P0] user_id
+- [P0] title
+- [P2] description
+- [P2] category
+- [P2] is_public
+- [P0] created_at
+- [P0] updated_at
 
 #### Words（単語）
 
-- id
-- wordbook_id
-- spelling
-- pronunciation
-- part_of_speech
-- status（not_studied / hard / uncertain / easy）
-- next_review_date
-- image_url
-- memo
-- created_at
-- updated_at
+- [P0] id
+- [P0] wordbook_id
+- [P0] spelling
+- [P2] pronunciation
+- [P2] part_of_speech
+- [P0] status（not_studied / hard / uncertain / easy）
+- [P0] next_review_date
+- [P2] image_url
+- [P2] memo
+- [P0] created_at
+- [P0] updated_at
 
 #### Meanings（意味）
 
-- id
-- word_id
-- meaning_text
-- meaning_order
-- created_at
-- updated_at
+- [P0] id
+- [P0] word_id
+- [P0] content
+- [P0] display_order
+- [P0] created_at
+- [P0] updated_at
 
 #### Examples（例文）
 
-- id
-- word_id
-- example_text
-- example_translation
-- example_order
-- created_at
-- updated_at
+- [P0] id
+- [P0] word_id
+- [P0] sentence
+- [P0] translation
+- [P0] display_order
+- [P0] created_at
+- [P0] updated_at
 
 #### StudyLogs（学習履歴）
 
-- id
-- user_id
-- word_id
-- wordbook_id
-- study_type（test / review）
-- is_correct
-- self_evaluation（hard / uncertain / easy）
-- study_duration
-- created_at
+- [P2] id
+- [P2] user_id
+- [P2] word_id
+- [P2] wordbook_id
+- [P2] study_type（test / review）
+- [P2] is_correct
+- [P2] self_evaluation（hard / uncertain / easy）
+- [P2] study_duration
+- [P2] created_at
 
-#### UserSettings（ユーザ設定）
+#### Settings（ユーザ設定）
 
-- id
-- user_id
-- hard_interval_days
-- uncertain_interval_days
-- easy_interval_days
-- notification_enabled
-- notification_time
-- voice_language（us / uk）
-- voice_speed
-- theme（light / dark）
-- created_at
-- updated_at
+- [P0] id
+- [P0] user_id
+- [P0] hard_interval_days
+- [P0] uncertain_interval_days
+- [P0] easy_interval_days
+- [P2] notification_enabled
+- [P2] notification_time
+- [P2] voice_language（us / uk）
+- [P2] voice_speed
+- [P2] theme（light / dark）
+- [P0] created_at
+- [P0] updated_at
 
 #### StudyGoals（学習目標）
 
-- id
-- user_id
-- daily_word_count
-- weekly_study_minutes
-- created_at
-- updated_at
+- [P2] id
+- [P2] user_id
+- [P2] daily_word_count
+- [P2] weekly_study_minutes
+- [P2] created_at
+- [P2] updated_at
 
 ## 5. 外部連携
 
