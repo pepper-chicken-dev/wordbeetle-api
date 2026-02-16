@@ -1,0 +1,79 @@
+@startuml
+' hide the spot
+hide circle
+
+' avoid problems with angled crows feet
+skinparam linetype ortho
+
+entity "users" as users {
+  *id : bigint <<PK>>
+  --
+  email : string
+  name : string
+  avatar_url : string
+  *provider : string
+  *provider_uid : string
+  guest_expires_at : datetime
+  created_at : datetime
+  updated_at : datetime
+}
+
+entity "wordbooks" as wordbooks {
+  *id : bigint <<PK>>
+  --
+  *user_id : bigint <<FK>>
+  *title : string
+  created_at : datetime
+  updated_at : datetime
+}
+
+entity "words" as words {
+  *id : bigint <<PK>>
+  --
+  *wordbook_id : bigint <<FK>>
+  *spelling : string
+  *status : string
+  next_review_date : date
+  created_at : datetime
+  updated_at : datetime
+}
+
+entity "meanings" as meanings {
+  *id : bigint <<PK>>
+  --
+  *word_id : bigint <<FK>>
+  *content : text
+  *display_order : integer
+  created_at : datetime
+  updated_at : datetime
+}
+
+entity "examples" as examples {
+  *id : bigint <<PK>>
+  --
+  *word_id : bigint <<FK>>
+  *sentence : text
+  *translation : text
+  *display_order : integer
+  created_at : datetime
+  updated_at : datetime
+}
+
+entity "settings" as settings {
+  *id : bigint <<PK>>
+  --
+  *user_id : bigint <<FK>>
+  *hard_interval_days : integer
+  *uncertain_interval_days : integer
+  *easy_interval_days : integer
+  created_at : datetime
+  updated_at : datetime
+}
+
+users ||--o{ wordbooks : "has many"
+users ||--|| settings : "has one"
+wordbooks ||--o{ words : "has many"
+words ||--o{ meanings : "has many"
+words ||--o{ examples : "has many"
+
+@enduml

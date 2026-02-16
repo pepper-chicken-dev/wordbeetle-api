@@ -1,24 +1,17 @@
-# README
+# WordBeetle - 単語帳アプリ
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+WordBeetleは、効率的な単語学習を実現する間隔反復学習機能を搭載した単語帳アプリケーションです。
 
-Things you may want to cover:
+## 開発背景
 
-* Ruby version
+TOEICの学習時に、複数の参考書でわからなかった単語を一元管理したいと考え、開発を始めました。
 
-* System dependencies
+以下の機能を重視しています：
 
-* Configuration
+- 間隔反復学習による効率的な復習
+- キーボードで素早く単語を登録できる
+- 音声による発音確認
 
-* Database creation
+## ER図
 
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+![ER Diagram](docs/er_diagram.svg)
