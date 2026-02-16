@@ -10,6 +10,13 @@ Rails.application.routes.draw do
     namespace :v1 do
       # Authentication
       post "auth/google", to: "auth#google"
+
+      # Resources
+      resources :wordbooks
+      resources :words
+      resources :meanings
+      resources :examples
+      resources :settings
     end
   end
 

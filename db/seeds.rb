@@ -1,9 +1,141 @@
 # This file should ensure the existence of records required to run the application in every environment (production,
 # development, test). The code here should be idempotent so that it can be executed at any point in every environment.
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+
+puts "Cleaning database..."
+Setting.destroy_all
+Example.destroy_all
+Meaning.destroy_all
+Word.destroy_all
+Wordbook.destroy_all
+User.destroy_all
+
+puts "Creating test users..."
+user1 = User.create!(
+  email: "test@example.com",
+  name: "Test User",
+  google_id: "test123",
+  avatar_url: "https://example.com/avatar.jpg"
+)
+
+user2 = User.create!(
+  email: "demo@example.com",
+  name: "Demo User",
+  google_id: "demo456",
+  avatar_url: "https://example.com/demo.jpg"
+)
+
+puts "Creating settings..."
+Setting.create!(
+  user: user1,
+  hard_interval_days: 1,
+  uncertain_interval_days: 3,
+  easy_interval_days: 7
+)
+
+Setting.create!(
+  user: user2,
+  hard_interval_days: 2,
+  uncertain_interval_days: 5,
+  easy_interval_days: 10
+)
+
+puts "Creating wordbooks..."
+wordbook1 = Wordbook.create!(
+  user: user1,
+  title: "英単語基礎"
+)
+
+wordbook2 = Wordbook.create!(
+  user: user1,
+  title: "ビジネス英語"
+)
+
+wordbook3 = Wordbook.create!(
+  user: user2,
+  title: "TOEIC対策"
+)
+
+puts "Creating words..."
+word1 = Word.create!(
+  wordbook: wordbook1,
+  spelling: "apple",
+  status: "learning",
+  next_review_date: Date.today + 1
+)
+
+word2 = Word.create!(
+  wordbook: wordbook1,
+  spelling: "book",
+  status: "learning",
+  next_review_date: Date.today + 3
+)
+
+word3 = Word.create!(
+  wordbook: wordbook2,
+  spelling: "negotiate",
+  status: "learning",
+  next_review_date: Date.today + 2
+)
+
+puts "Creating meanings..."
+Meaning.create!(
+  word: word1,
+  content: "りんご",
+  display_order: 1
+)
+
+Meaning.create!(
+  word: word2,
+  content: "本",
+  display_order: 1
+)
+
+Meaning.create!(
+  word: word2,
+  content: "予約する",
+  display_order: 2
+)
+
+Meaning.create!(
+  word: word3,
+  content: "交渉する",
+  display_order: 1
+)
+
+puts "Creating examples..."
+Example.create!(
+  word: word1,
+  sentence: "I like apples.",
+  translation: "私はりんごが好きです。",
+  display_order: 1
+)
+
+Example.create!(
+  word: word1,
+  sentence: "This is a red apple.",
+  translation: "これは赤いりんごです。",
+  display_order: 2
+)
+
+Example.create!(
+  word: word2,
+  sentence: "I read a book every day.",
+  translation: "私は毎日本を読みます。",
+  display_order: 1
+)
+
+Example.create!(
+  word: word3,
+  sentence: "We need to negotiate the terms.",
+  translation: "私たちは条件を交渉する必要があります。",
+  display_order: 1
+)
+
+puts "Seed data created successfully!"
+puts "Users: #{User.count}"
+puts "Settings: #{Setting.count}"
+puts "Wordbooks: #{Wordbook.count}"
+puts "Words: #{Word.count}"
+puts "Meanings: #{Meaning.count}"
+puts "Examples: #{Example.count}"
