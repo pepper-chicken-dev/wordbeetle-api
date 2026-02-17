@@ -12,7 +12,7 @@ module Api
 
         return render json: { error: "Invalid ID token" }, status: :unauthorized unless payload
 
-        user = User.find_or_create_by(google_id: payload["sub"]) do |u|
+        user = User.find_or_create_by(provider: "google", provider_uid: payload["sub"]) do |u|
           u.email = payload["email"]
           u.name = payload["name"]
           u.avatar_url = payload["picture"]

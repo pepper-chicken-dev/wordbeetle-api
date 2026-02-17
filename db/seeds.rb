@@ -14,14 +14,16 @@ puts "Creating test users..."
 user1 = User.create!(
   email: "test@example.com",
   name: "Test User",
-  google_id: "test123",
+  provider: "google",
+  provider_uid: "test123",
   avatar_url: "https://example.com/avatar.jpg"
 )
 
 user2 = User.create!(
   email: "demo@example.com",
   name: "Demo User",
-  google_id: "demo456",
+  provider: "google",
+  provider_uid: "demo456",
   avatar_url: "https://example.com/demo.jpg"
 )
 
