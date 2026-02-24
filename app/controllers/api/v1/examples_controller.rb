@@ -1,7 +1,7 @@
 module Api
   module V1
     class ExamplesController < ApplicationController
-      before_action :set_example, only: [:show, :update, :destroy]
+      before_action :set_example, only: [ :show, :update, :destroy ]
 
       def index
         examples = Example.all

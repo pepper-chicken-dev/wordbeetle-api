@@ -6,5 +6,5 @@ class Word < ApplicationRecord
   validates :spelling, presence: true
   validates :status, presence: true
 
-  enum :status, { learning: 'learning', learned: 'learned' }
+  enum :status, { learning: "learning", learned: "learned" }
 end

@@ -1,7 +1,7 @@
 module Api
   module V1
     class MeaningsController < ApplicationController
-      before_action :set_meaning, only: [:show, :update, :destroy]
+      before_action :set_meaning, only: [ :show, :update, :destroy ]
 
       def index
         meanings = Meaning.all

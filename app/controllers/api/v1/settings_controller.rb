@@ -1,7 +1,7 @@
 module Api
   module V1
     class SettingsController < ApplicationController
-      before_action :set_setting, only: [:show, :update, :destroy]
+      before_action :set_setting, only: [ :show, :update, :destroy ]
 
       def index
         settings = Setting.all

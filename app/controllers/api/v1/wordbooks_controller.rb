@@ -1,7 +1,7 @@
 module Api
   module V1
     class WordbooksController < ApplicationController
-      before_action :set_wordbook, only: [:show, :update, :destroy]
+      before_action :set_wordbook, only: [ :show, :update, :destroy ]
 
       def index
         wordbooks = Wordbook.all
