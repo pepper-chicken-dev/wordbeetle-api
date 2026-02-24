@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_17_134142) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_22_131840) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -50,8 +50,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_17_134142) do
     t.datetime "guest_expires_at"
     t.string "name"
     t.string "provider", null: false
-    t.string "provider_uid"
+    t.string "provider_uid", null: false
     t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["provider", "provider_uid"], name: "index_users_on_provider_and_provider_uid", unique: true
+    t.check_constraint "provider::text <> 'guest'::text OR guest_expires_at IS NOT NULL", name: "check_guest_expires_at_presence"
   end
 
   create_table "wordbooks", force: :cascade do |t|

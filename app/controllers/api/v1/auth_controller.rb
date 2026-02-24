@@ -12,8 +12,17 @@ module Api
 
         return render json: { error: "Invalid ID token" }, status: :unauthorized unless payload
 
+        email = payload["email"]
+        existing_user = User.find_by(email: email) if email.present?
+
+        if existing_user && existing_user.provider != "google"
+          return render json: {
+            error: "This email is already registered with #{existing_user.provider}. Please sign in with #{existing_user.provider}."
+          }, status: :conflict
+        end
+
         user = User.find_or_create_by(provider: "google", provider_uid: payload["sub"]) do |u|
-          u.email = payload["email"]
+          u.email = email
           u.name = payload["name"]
           u.avatar_url = payload["picture"]
         end
