@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_22_131840) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_26_141209) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -35,9 +35,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_22_131840) do
 
   create_table "settings", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.integer "easy_interval_days", null: false
-    t.integer "hard_interval_days", null: false
-    t.integer "uncertain_interval_days", null: false
+    t.interval "easy_interval", null: false
+    t.interval "hard_interval", null: false
+    t.interval "uncertain_interval", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_settings_on_user_id"
@@ -67,7 +67,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_22_131840) do
 
   create_table "words", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.date "next_review_date"
+    t.datetime "next_review_at"
     t.string "spelling", null: false
     t.string "status", null: false
     t.datetime "updated_at", null: false
