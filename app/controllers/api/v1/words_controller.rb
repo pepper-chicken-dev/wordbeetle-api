@@ -42,7 +42,7 @@ module Api
       end
 
       def word_params
-        params.require(:word).permit(:wordbook_id, :spelling, :status, :next_review_date)
+        params.require(:word).permit(:wordbook_id, :spelling, :status, :next_review_at)
       end
     end
   end

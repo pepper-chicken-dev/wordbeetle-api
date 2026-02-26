@@ -30,16 +30,16 @@ user2 = User.create!(
 puts "Creating settings..."
 Setting.create!(
   user: user1,
-  hard_interval_days: 1,
-  uncertain_interval_days: 3,
-  easy_interval_days: 7
+  hard_interval: 1.day,
+  uncertain_interval: 3.days,
+  easy_interval: 7.days
 )
 
 Setting.create!(
   user: user2,
-  hard_interval_days: 2,
-  uncertain_interval_days: 5,
-  easy_interval_days: 10
+  hard_interval: 2.days,
+  uncertain_interval: 5.days,
+  easy_interval: 10.days
 )
 
 puts "Creating wordbooks..."
@@ -63,21 +63,21 @@ word1 = Word.create!(
   wordbook: wordbook1,
   spelling: "apple",
   status: "learning",
-  next_review_date: Date.today + 1
+  next_review_at: Time.current + 1.day
 )
 
 word2 = Word.create!(
   wordbook: wordbook1,
   spelling: "book",
   status: "learning",
-  next_review_date: Date.today + 3
+  next_review_at: Time.current + 3.days
 )
 
 word3 = Word.create!(
   wordbook: wordbook2,
   spelling: "negotiate",
   status: "learning",
-  next_review_date: Date.today + 2
+  next_review_at: Time.current + 2.days
 )
 
 puts "Creating meanings..."
