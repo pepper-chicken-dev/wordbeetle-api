@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_26_141209) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_27_024502) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -73,6 +73,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_26_141209) do
     t.datetime "updated_at", null: false
     t.bigint "wordbook_id", null: false
     t.index ["wordbook_id"], name: "index_words_on_wordbook_id"
+    t.check_constraint "status::text = ANY (ARRAY['not_studied'::character varying, 'hard'::character varying, 'uncertain'::character varying, 'easy'::character varying]::text[])", name: "check_words_status_values"
   end
 
   add_foreign_key "examples", "words"
