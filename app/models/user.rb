@@ -6,4 +6,6 @@ class User < ApplicationRecord
   validates :provider, presence: true
   validates :provider_uid, presence: true, uniqueness: { scope: :provider }
   validates :guest_expires_at, presence: true, if: -> { provider == "guest" }
+
+  enum :provider, { google: "google", guest: "guest" }
 end
