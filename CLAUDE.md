@@ -8,7 +8,6 @@ WordBeetle API is the backend for a spaced-repetition vocabulary learning app.
 - PostgreSQL
 - Authentication: Google ID token verification (`googleauth` gem)
 - Testing: RSpec, FactoryBot, shoulda-matchers
-- Linting: rubocop-rails-omakase (TODO: Hooks導入後に削除)
 
 ## Project Structure
 

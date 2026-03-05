@@ -36,7 +36,8 @@ Based on the above changes:
 ### 2. Commit and push
 
 - Stage the relevant changed files with `git add`
-- Create a single commit with a clear message in English derived from the diff
+- Create a single commit with a short, simple message in English derived from the diff
+- Do NOT include `Co-Authored-By` or any AI attribution in the commit message
 - Push the branch to origin (`git push -u origin <branch-name>`)
 
 ### 3. Create pull request
