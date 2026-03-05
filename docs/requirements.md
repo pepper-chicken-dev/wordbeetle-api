@@ -353,11 +353,16 @@ WordBeetleは、効率的な単語学習を実現する間隔反復学習機能�
 
 #### Users（ユーザ）
 
+- `(provider, provider_uid)` の組み合わせで一意に識別（DBユニーク制約）
+- `provider` は `google` または `guest` のみ（DBチェック制約）。今後、他の認証プロバイダ（GitHub、Apple等）が追加される可能性あり
+- `guest` ユーザは `guest_expires_at` が必須（モデルバリデーション＋DBチェック制約）
+- `email` はユニーク制約あり（nilを許容）
+
 - [P0] id
 - [P0] email
 - [P0] name
 - [P0] avatar_url
-- [P0] provider（google / github / guestなど）
+- [P0] provider（google / guest）
 - [P0] provider_uid（ゲストユーザの識別子も含む）
 - [P0] guest_expires_at（ゲストユーザの有効期限）
 - [P0] created_at
@@ -376,13 +381,16 @@ WordBeetleは、効率的な単語学習を実現する間隔反復学習機能�
 
 #### Words（単語）
 
+- `status` と `next_review_at` はSRS（間隔反復学習）のスケジューリングに使用する
+- `status` は `not_studied` / `hard` / `uncertain` / `easy` の4値（DBチェック制約）
+
 - [P0] id
 - [P0] wordbook_id
 - [P0] spelling
 - [P2] pronunciation
 - [P2] part_of_speech
 - [P0] status（not_studied / hard / uncertain / easy）
-- [P0] next_review_date
+- [P0] next_review_at
 - [P2] image_url
 - [P2] memo
 - [P0] created_at
@@ -421,11 +429,14 @@ WordBeetleは、効率的な単語学習を実現する間隔反復学習機能�
 
 #### Settings（ユーザ設定）
 
+- SRSの復習間隔を `hard` / `uncertain` / `easy` ごとに保持する
+- interval カラムは PostgreSQL の interval 型を使用
+
 - [P0] id
 - [P0] user_id
-- [P0] hard_interval_days
-- [P0] uncertain_interval_days
-- [P0] easy_interval_days
+- [P0] hard_interval
+- [P0] uncertain_interval
+- [P0] easy_interval
 - [P2] notification_enabled
 - [P2] notification_time
 - [P2] voice_language（us / uk）
