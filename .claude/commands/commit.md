@@ -1,6 +1,6 @@
 ---
-allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git push:*), Bash(git stash:*), Bash(git pull:*), Bash(git fetch:*), Bash(git diff:*), Bash(git log:*), Bash(cat tmp/pr_body.md), Bash(rm tmp/pr_body.md), AskUserQuestion
-description: Commit, push, and open a PR
+allowed-tools: Bash(git checkout:*), Bash(git add:*), Bash(git status:*), Bash(git commit:*), Bash(git stash:*), Bash(git pull:*), Bash(git fetch:*), Bash(git diff:*), AskUserQuestion
+description: Analyze changes and create well-organized commits
 ---
 
 ## Context
@@ -8,12 +8,6 @@ description: Commit, push, and open a PR
 - Current git status: !`git status`
 - Current git diff (uncommitted changes): !`git diff HEAD`
 - Current branch: !`git branch --show-current`
-- Existing commits on this branch (since main): !`git log origin/main..HEAD --oneline`
-- Full diff from main (committed + uncommitted): !`git diff origin/main...HEAD`
-
-## Prohibited actions
-
-- Do NOT rename branches (`git branch -m`). Always create a new branch instead.
 
 ## Your task
 
@@ -21,7 +15,7 @@ Based on the above context:
 
 ### Pre-check
 
-- If there are no uncommitted changes AND no commits ahead of main, inform the user and stop. Do NOT proceed.
+- If there are no uncommitted changes, inform the user and stop. Do NOT proceed.
 
 ### 1. Analyze changes and propose commit groups
 
@@ -63,19 +57,10 @@ Derive a branch name from the overall set of changes. The name must follow: `fea
 - If the confirmed name matches the current branch, stay on it
 - Otherwise: stash changes → `git checkout main` → fetch/pull latest → `git checkout -b <new-branch>` → pop stash
 
-### 3. Commit and push
+### 3. Commit
 
 For each commit group (in the confirmed order):
 
 - Stage only the files in that group with `git add`
 - Create a commit with the group's message
 - Do NOT include `Co-Authored-By` or any AI attribution in commit messages
-
-After all commits are created, push the branch: `git push -u origin <branch-name>`
-
-### 4. Create pull request
-
-- Write PR body to `tmp/pr_body.md` summarizing all commits (both existing and newly created)
-- Create a pull request: `gh pr create -t "<title>" -F tmp/pr_body.md`
-- Title and body must be in English
-- Clean up: `rm tmp/pr_body.md`
