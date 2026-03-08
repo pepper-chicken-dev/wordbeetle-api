@@ -1,6 +1,40 @@
 require "rails_helper"
 
 RSpec.describe "Api::V1::Auth", type: :request do
+  describe "POST /api/v1/auth/guest" do
+    it "creates a guest user and returns 201 with user and token" do
+      expect {
+        post "/api/v1/auth/guest"
+      }.to change(User, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+
+      body = response.parsed_body
+      expect(body["user"]["provider"]).to eq("guest")
+      expect(body["token"]).to be_present
+    end
+
+    it "sets guest_expires_at to approximately 7 days from now" do
+      post "/api/v1/auth/guest"
+
+      user = User.last
+      expect(user.guest_expires_at).to be_within(1.second).of(7.days.from_now)
+    end
+
+    it "returns a token that can be verified" do
+      post "/api/v1/auth/guest"
+
+      body = response.parsed_body
+      token = body["token"]
+      provider_uid = body["user"]["provider_uid"]
+
+      verifier = ActiveSupport::MessageVerifier.new(
+        Rails.application.key_generator.generate_key("guest_auth")
+      )
+      expect(verifier.verify(token, purpose: :guest_auth)).to eq(provider_uid)
+    end
+  end
+
   describe "POST /api/v1/auth/google" do
     let(:google_payload) do
       {

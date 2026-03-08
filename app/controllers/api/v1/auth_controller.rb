@@ -2,6 +2,15 @@ module Api
   module V1
     class AuthController < ApplicationController
       include GoogleAuthenticatable
+      include GuestAuthenticatable
+
+      def guest
+        provider_uid = SecureRandom.uuid
+        user = User.create!(provider: "guest", provider_uid: provider_uid, guest_expires_at: 7.days.from_now)
+        token = generate_guest_token(provider_uid)
+
+        render json: { user: user, token: token }, status: :created
+      end
 
       def google
         id_token = request.headers["Authorization"]&.split("Bearer ")&.last
