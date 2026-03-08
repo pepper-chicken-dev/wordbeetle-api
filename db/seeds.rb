@@ -62,21 +62,21 @@ puts "Creating words..."
 word1 = Word.create!(
   wordbook: wordbook1,
   spelling: "apple",
-  status: "learning",
+  status: "hard",
   next_review_at: Time.current + 1.day
 )
 
 word2 = Word.create!(
   wordbook: wordbook1,
   spelling: "book",
-  status: "learning",
+  status: "uncertain",
   next_review_at: Time.current + 3.days
 )
 
 word3 = Word.create!(
   wordbook: wordbook2,
   spelling: "negotiate",
-  status: "learning",
+  status: "not_studied",
   next_review_at: Time.current + 2.days
 )
 
