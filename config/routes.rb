@@ -9,6 +9,7 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       # Authentication
+      post "auth/guest", to: "auth#guest"
       post "auth/google", to: "auth#google"
 
       # Resources
