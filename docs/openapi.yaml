@@ -1,0 +1,787 @@
+openapi: 3.0.3
+info:
+  title: WordBeetle API
+  description: Backend API for WordBeetle - a spaced-repetition vocabulary learning app
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000
+    description: Development
+
+paths:
+  # ──────────────── Authentication ────────────────
+  /api/v1/auth/guest:
+    post:
+      tags: [Auth]
+      summary: Create a guest user
+      description: Creates a temporary guest user (expires in 7 days) and returns a signed token.
+      responses:
+        "201":
+          description: Guest user created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
+                  token:
+                    type: string
+                    description: Signed guest token for subsequent requests
+
+  /api/v1/auth/google:
+    post:
+      tags: [Auth]
+      summary: Authenticate with Google
+      description: |
+        Verifies a Google ID token and finds or creates the user.
+        If the email is already registered with a different provider, returns 409 Conflict.
+      security:
+        - googleIdToken: []
+      responses:
+        "200":
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
+        "400":
+          description: Authorization header missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Invalid ID token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Email already registered with another provider
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ──────────────── Wordbooks ────────────────
+  /api/v1/wordbooks:
+    get:
+      tags: [Wordbooks]
+      summary: List all wordbooks
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Wordbook"
+    post:
+      tags: [Wordbooks]
+      summary: Create a wordbook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [wordbook]
+              properties:
+                wordbook:
+                  type: object
+                  required: [user_id, title]
+                  properties:
+                    user_id:
+                      type: integer
+                    title:
+                      type: string
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Wordbook"
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrors"
+
+  /api/v1/wordbooks/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      tags: [Wordbooks]
+      summary: Get a wordbook
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Wordbook"
+    patch:
+      tags: [Wordbooks]
+      summary: Update a wordbook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [wordbook]
+              properties:
+                wordbook:
+                  type: object
+                  properties:
+                    user_id:
+                      type: integer
+                    title:
+                      type: string
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Wordbook"
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrors"
+    delete:
+      tags: [Wordbooks]
+      summary: Delete a wordbook
+      responses:
+        "204":
+          description: No Content
+
+  # ──────────────── Words ────────────────
+  /api/v1/words:
+    get:
+      tags: [Words]
+      summary: List all words
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Word"
+    post:
+      tags: [Words]
+      summary: Create a word
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [word]
+              properties:
+                word:
+                  type: object
+                  required: [wordbook_id, spelling, status]
+                  properties:
+                    wordbook_id:
+                      type: integer
+                    spelling:
+                      type: string
+                    status:
+                      $ref: "#/components/schemas/WordStatus"
+                    next_review_at:
+                      type: string
+                      format: date-time
+                      nullable: true
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Word"
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrors"
+
+  /api/v1/words/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      tags: [Words]
+      summary: Get a word
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Word"
+    patch:
+      tags: [Words]
+      summary: Update a word
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [word]
+              properties:
+                word:
+                  type: object
+                  properties:
+                    wordbook_id:
+                      type: integer
+                    spelling:
+                      type: string
+                    status:
+                      $ref: "#/components/schemas/WordStatus"
+                    next_review_at:
+                      type: string
+                      format: date-time
+                      nullable: true
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Word"
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrors"
+    delete:
+      tags: [Words]
+      summary: Delete a word
+      responses:
+        "204":
+          description: No Content
+
+  # ──────────────── Meanings ────────────────
+  /api/v1/meanings:
+    get:
+      tags: [Meanings]
+      summary: List all meanings
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Meaning"
+    post:
+      tags: [Meanings]
+      summary: Create a meaning
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [meaning]
+              properties:
+                meaning:
+                  type: object
+                  required: [word_id, content, display_order]
+                  properties:
+                    word_id:
+                      type: integer
+                    content:
+                      type: string
+                    display_order:
+                      type: integer
+                      minimum: 1
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meaning"
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrors"
+
+  /api/v1/meanings/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      tags: [Meanings]
+      summary: Get a meaning
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meaning"
+    patch:
+      tags: [Meanings]
+      summary: Update a meaning
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [meaning]
+              properties:
+                meaning:
+                  type: object
+                  properties:
+                    word_id:
+                      type: integer
+                    content:
+                      type: string
+                    display_order:
+                      type: integer
+                      minimum: 1
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meaning"
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrors"
+    delete:
+      tags: [Meanings]
+      summary: Delete a meaning
+      responses:
+        "204":
+          description: No Content
+
+  # ──────────────── Examples ────────────────
+  /api/v1/examples:
+    get:
+      tags: [Examples]
+      summary: List all examples
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Example"
+    post:
+      tags: [Examples]
+      summary: Create an example
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [example]
+              properties:
+                example:
+                  type: object
+                  required: [word_id, sentence, translation, display_order]
+                  properties:
+                    word_id:
+                      type: integer
+                    sentence:
+                      type: string
+                    translation:
+                      type: string
+                    display_order:
+                      type: integer
+                      minimum: 1
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Example"
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrors"
+
+  /api/v1/examples/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      tags: [Examples]
+      summary: Get an example
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Example"
+    patch:
+      tags: [Examples]
+      summary: Update an example
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [example]
+              properties:
+                example:
+                  type: object
+                  properties:
+                    word_id:
+                      type: integer
+                    sentence:
+                      type: string
+                    translation:
+                      type: string
+                    display_order:
+                      type: integer
+                      minimum: 1
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Example"
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrors"
+    delete:
+      tags: [Examples]
+      summary: Delete an example
+      responses:
+        "204":
+          description: No Content
+
+  # ──────────────── Settings ────────────────
+  /api/v1/settings:
+    get:
+      tags: [Settings]
+      summary: List all settings
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Setting"
+    post:
+      tags: [Settings]
+      summary: Create a setting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [setting]
+              properties:
+                setting:
+                  type: object
+                  required: [user_id, hard_interval, uncertain_interval, easy_interval]
+                  properties:
+                    user_id:
+                      type: integer
+                    hard_interval:
+                      $ref: "#/components/schemas/IntervalInput"
+                    uncertain_interval:
+                      $ref: "#/components/schemas/IntervalInput"
+                    easy_interval:
+                      $ref: "#/components/schemas/IntervalInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Setting"
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrors"
+
+  /api/v1/settings/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      tags: [Settings]
+      summary: Get a setting
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Setting"
+    patch:
+      tags: [Settings]
+      summary: Update a setting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [setting]
+              properties:
+                setting:
+                  type: object
+                  properties:
+                    user_id:
+                      type: integer
+                    hard_interval:
+                      $ref: "#/components/schemas/IntervalInput"
+                    uncertain_interval:
+                      $ref: "#/components/schemas/IntervalInput"
+                    easy_interval:
+                      $ref: "#/components/schemas/IntervalInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Setting"
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrors"
+    delete:
+      tags: [Settings]
+      summary: Delete a setting
+      responses:
+        "204":
+          description: No Content
+
+components:
+  securitySchemes:
+    googleIdToken:
+      type: http
+      scheme: bearer
+      description: Google ID token passed as Bearer token in Authorization header
+
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+
+  schemas:
+    # ──── Models ────
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        provider:
+          type: string
+          enum: [google, guest]
+        provider_uid:
+          type: string
+        email:
+          type: string
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        avatar_url:
+          type: string
+          nullable: true
+        guest_expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Present only for guest users (expires 7 days after creation)
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Wordbook:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        title:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Word:
+      type: object
+      properties:
+        id:
+          type: integer
+        wordbook_id:
+          type: integer
+        spelling:
+          type: string
+        status:
+          $ref: "#/components/schemas/WordStatus"
+        next_review_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    WordStatus:
+      type: string
+      enum: [not_studied, hard, uncertain, easy]
+
+    Meaning:
+      type: object
+      properties:
+        id:
+          type: integer
+        word_id:
+          type: integer
+        content:
+          type: string
+        display_order:
+          type: integer
+          minimum: 1
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Example:
+      type: object
+      properties:
+        id:
+          type: integer
+        word_id:
+          type: integer
+        sentence:
+          type: string
+        translation:
+          type: string
+        display_order:
+          type: integer
+          minimum: 1
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Setting:
+      type: object
+      description: |
+        Interval fields are returned as {days, hours, minutes} objects
+        (converted from PostgreSQL interval internally).
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        hard_interval:
+          $ref: "#/components/schemas/IntervalOutput"
+        uncertain_interval:
+          $ref: "#/components/schemas/IntervalOutput"
+        easy_interval:
+          $ref: "#/components/schemas/IntervalOutput"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    IntervalInput:
+      type: object
+      description: Duration expressed as days/hours/minutes
+      properties:
+        days:
+          type: integer
+          default: 0
+        hours:
+          type: integer
+          default: 0
+        minutes:
+          type: integer
+          default: 0
+
+    IntervalOutput:
+      type: object
+      nullable: true
+      properties:
+        days:
+          type: integer
+        hours:
+          type: integer
+        minutes:
+          type: integer
+
+    # ──── Error responses ────
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+
+    ValidationErrors:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: string
