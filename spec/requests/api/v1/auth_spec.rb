@@ -10,7 +10,8 @@ RSpec.describe "Api::V1::Auth", type: :request do
       expect(response).to have_http_status(:created)
 
       body = response.parsed_body
-      expect(body["user"]["provider"]).to eq("guest")
+      expect(body["user"]).to have_key("guest_expires_at")
+      expect(body["user"].keys).to match_array([ "guest_expires_at" ])
       expect(body["token"]).to be_present
     end
 
@@ -26,7 +27,7 @@ RSpec.describe "Api::V1::Auth", type: :request do
 
       body = response.parsed_body
       token = body["token"]
-      provider_uid = body["user"]["provider_uid"]
+      provider_uid = User.last.provider_uid
 
       verifier = ActiveSupport::MessageVerifier.new(
         Rails.application.key_generator.generate_key("guest_auth")
@@ -80,7 +81,12 @@ RSpec.describe "Api::V1::Auth", type: :request do
         }.to change(User, :count).by(1)
 
         expect(response).to have_http_status(:ok)
-        expect(response.parsed_body["user"]["email"]).to eq("test@example.com")
+
+        user_json = response.parsed_body["user"]
+        expect(user_json["email"]).to eq("test@example.com")
+        expect(user_json["name"]).to eq("Test User")
+        expect(user_json["avatar_url"]).to eq("https://example.com/avatar.jpg")
+        expect(user_json.keys).to match_array([ "email", "name", "avatar_url" ])
       end
     end
 

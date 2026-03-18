@@ -9,7 +9,7 @@ module Api
         user = User.create!(provider: "guest", provider_uid: provider_uid, guest_expires_at: 7.days.from_now)
         token = generate_guest_token(provider_uid)
 
-        render json: { user: user, token: token }, status: :created
+        render json: { user: user.as_json(only: [ :guest_expires_at ]), token: token }, status: :created
       end
 
       def google
@@ -36,7 +36,7 @@ module Api
           u.avatar_url = payload["picture"]
         end
 
-        render json: { user: user }, status: :ok
+        render json: { user: user.as_json(only: [ :email, :name, :avatar_url ]) }, status: :ok
       end
     end
   end
