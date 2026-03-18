@@ -24,7 +24,12 @@ paths:
                 type: object
                 properties:
                   user:
-                    $ref: "#/components/schemas/User"
+                    type: object
+                    properties:
+                      guest_expires_at:
+                        type: string
+                        format: date-time
+                        description: Expiration time for the guest user (7 days after creation)
                   token:
                     type: string
                     description: Signed guest token for subsequent requests
@@ -47,7 +52,16 @@ paths:
                 type: object
                 properties:
                   user:
-                    $ref: "#/components/schemas/User"
+                    type: object
+                    properties:
+                      email:
+                        type: string
+                      name:
+                        type: string
+                        nullable: true
+                      avatar_url:
+                        type: string
+                        nullable: true
         "400":
           description: Authorization header missing
           content:
