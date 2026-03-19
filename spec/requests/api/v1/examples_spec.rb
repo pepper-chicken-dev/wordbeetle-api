@@ -1,16 +1,26 @@
 require "rails_helper"
 
 RSpec.describe "Api::V1::Examples", type: :request do
-  let(:word) { create(:word) }
+  let(:user) { create(:user) }
+  let(:headers) { auth_headers_for(user) }
+  let(:wordbook) { create(:wordbook, user: user) }
+  let(:word) { create(:word, wordbook: wordbook) }
 
   describe "GET /api/v1/examples" do
-    it "returns all examples" do
+    it "returns current user's examples" do
       create_list(:example, 2, word: word)
+      create(:example) # another user's example
 
-      get "/api/v1/examples"
+      get "/api/v1/examples", headers: headers
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.size).to eq(2)
+    end
+
+    it "returns 401 without authentication" do
+      get "/api/v1/examples"
+
+      expect(response).to have_http_status(:unauthorized)
     end
   end
 
@@ -18,10 +28,18 @@ RSpec.describe "Api::V1::Examples", type: :request do
     it "returns the example" do
       example = create(:example, word: word, sentence: "Good morning")
 
-      get "/api/v1/examples/#{example.id}"
+      get "/api/v1/examples/#{example.id}", headers: headers
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body["sentence"]).to eq("Good morning")
+    end
+
+    it "returns not_found for another user's example" do
+      other_example = create(:example)
+
+      get "/api/v1/examples/#{other_example.id}", headers: headers
+
+      expect(response).to have_http_status(:not_found)
     end
   end
 
@@ -38,7 +56,7 @@ RSpec.describe "Api::V1::Examples", type: :request do
         }
 
         expect {
-          post "/api/v1/examples", params: params
+          post "/api/v1/examples", params: params, headers: headers
         }.to change(Example, :count).by(1)
 
         expect(response).to have_http_status(:created)
@@ -47,10 +65,18 @@ RSpec.describe "Api::V1::Examples", type: :request do
 
     context "with invalid params" do
       it "returns unprocessable_entity" do
-        post "/api/v1/examples", params: { example: { word_id: word.id, sentence: "", translation: "翻訳", display_order: 1 } }
+        post "/api/v1/examples", params: { example: { word_id: word.id, sentence: "", translation: "翻訳", display_order: 1 } }, headers: headers
 
         expect(response).to have_http_status(:unprocessable_entity)
       end
+    end
+
+    it "returns not_found when word belongs to another user" do
+      other_word = create(:word)
+
+      post "/api/v1/examples", params: { example: { word_id: other_word.id, sentence: "test", translation: "test", display_order: 1 } }, headers: headers
+
+      expect(response).to have_http_status(:not_found)
     end
   end
 
@@ -58,10 +84,18 @@ RSpec.describe "Api::V1::Examples", type: :request do
     let(:example_record) { create(:example, word: word) }
 
     it "updates the example" do
-      patch "/api/v1/examples/#{example_record.id}", params: { example: { sentence: "Updated sentence" } }
+      patch "/api/v1/examples/#{example_record.id}", params: { example: { sentence: "Updated sentence" } }, headers: headers
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body["sentence"]).to eq("Updated sentence")
+    end
+
+    it "returns not_found for another user's example" do
+      other_example = create(:example)
+
+      patch "/api/v1/examples/#{other_example.id}", params: { example: { sentence: "hacked" } }, headers: headers
+
+      expect(response).to have_http_status(:not_found)
     end
   end
 
@@ -70,10 +104,18 @@ RSpec.describe "Api::V1::Examples", type: :request do
       example_record = create(:example, word: word)
 
       expect {
-        delete "/api/v1/examples/#{example_record.id}"
+        delete "/api/v1/examples/#{example_record.id}", headers: headers
       }.to change(Example, :count).by(-1)
 
       expect(response).to have_http_status(:no_content)
+    end
+
+    it "returns not_found for another user's example" do
+      other_example = create(:example)
+
+      delete "/api/v1/examples/#{other_example.id}", headers: headers
+
+      expect(response).to have_http_status(:not_found)
     end
   end
 end

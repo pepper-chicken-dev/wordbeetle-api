@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe "Api::V1::Auth", type: :request do
   describe "POST /api/v1/auth/guest" do
-    it "creates a guest user and returns 201 with user and token" do
+    it "creates a guest user and returns 201 with user and JWT token" do
       expect {
         post "/api/v1/auth/guest"
       }.to change(User, :count).by(1)
@@ -22,17 +22,26 @@ RSpec.describe "Api::V1::Auth", type: :request do
       expect(user.guest_expires_at).to be_within(1.second).of(7.days.from_now)
     end
 
-    it "returns a token that can be verified" do
+    it "returns a JWT token containing the user_id" do
       post "/api/v1/auth/guest"
 
       body = response.parsed_body
       token = body["token"]
-      provider_uid = User.last.provider_uid
+      user = User.last
 
-      verifier = ActiveSupport::MessageVerifier.new(
-        Rails.application.key_generator.generate_key("guest_auth")
-      )
-      expect(verifier.verify(token, purpose: :guest_auth)).to eq(provider_uid)
+      decoded = JWT.decode(token, Rails.application.secret_key_base, true, algorithm: "HS256")
+      expect(decoded.first["sub"]).to eq(user.id)
+    end
+
+    it "returns a JWT token that expires at guest_expires_at" do
+      post "/api/v1/auth/guest"
+
+      body = response.parsed_body
+      token = body["token"]
+      user = User.last
+
+      decoded = JWT.decode(token, Rails.application.secret_key_base, true, algorithm: "HS256")
+      expect(decoded.first["exp"]).to eq(user.guest_expires_at.to_i)
     end
   end
 
@@ -75,18 +84,23 @@ RSpec.describe "Api::V1::Auth", type: :request do
         allow(Google::Auth::IDTokens).to receive(:verify_oidc).and_return(google_payload)
       end
 
-      it "creates a new user and returns ok" do
+      it "creates a new user and returns ok with JWT token" do
         expect {
           post "/api/v1/auth/google", headers: { "Authorization" => "Bearer valid_token" }
         }.to change(User, :count).by(1)
 
         expect(response).to have_http_status(:ok)
 
-        user_json = response.parsed_body["user"]
+        body = response.parsed_body
+        user_json = body["user"]
         expect(user_json["email"]).to eq("test@example.com")
         expect(user_json["name"]).to eq("Test User")
         expect(user_json["avatar_url"]).to eq("https://example.com/avatar.jpg")
         expect(user_json.keys).to match_array([ "email", "name", "avatar_url" ])
+
+        expect(body["token"]).to be_present
+        decoded = JWT.decode(body["token"], Rails.application.secret_key_base, true, algorithm: "HS256")
+        expect(decoded.first["sub"]).to eq(User.last.id)
       end
     end
 
@@ -102,6 +116,7 @@ RSpec.describe "Api::V1::Auth", type: :request do
         }.not_to change(User, :count)
 
         expect(response).to have_http_status(:ok)
+        expect(response.parsed_body["token"]).to be_present
       end
     end
 

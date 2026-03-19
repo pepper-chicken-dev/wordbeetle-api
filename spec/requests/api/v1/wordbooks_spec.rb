@@ -2,22 +2,30 @@ require "rails_helper"
 
 RSpec.describe "Api::V1::Wordbooks", type: :request do
   let(:user) { create(:user) }
+  let(:headers) { auth_headers_for(user) }
 
   describe "GET /api/v1/wordbooks" do
-    it "returns all wordbooks" do
+    it "returns current user's wordbooks" do
       create_list(:wordbook, 3, user: user)
+      create(:wordbook) # another user's wordbook
 
-      get "/api/v1/wordbooks"
+      get "/api/v1/wordbooks", headers: headers
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.size).to eq(3)
     end
 
     it "returns empty array when no wordbooks exist" do
-      get "/api/v1/wordbooks"
+      get "/api/v1/wordbooks", headers: headers
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body).to eq([])
+    end
+
+    it "returns 401 without authentication" do
+      get "/api/v1/wordbooks"
+
+      expect(response).to have_http_status(:unauthorized)
     end
   end
 
@@ -25,14 +33,22 @@ RSpec.describe "Api::V1::Wordbooks", type: :request do
     it "returns the wordbook" do
       wordbook = create(:wordbook, user: user)
 
-      get "/api/v1/wordbooks/#{wordbook.id}"
+      get "/api/v1/wordbooks/#{wordbook.id}", headers: headers
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body["title"]).to eq(wordbook.title)
     end
 
     it "returns not_found for nonexistent wordbook" do
-      get "/api/v1/wordbooks/999999"
+      get "/api/v1/wordbooks/999999", headers: headers
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "returns not_found for another user's wordbook" do
+      other_wordbook = create(:wordbook)
+
+      get "/api/v1/wordbooks/#{other_wordbook.id}", headers: headers
 
       expect(response).to have_http_status(:not_found)
     end
@@ -40,19 +56,20 @@ RSpec.describe "Api::V1::Wordbooks", type: :request do
 
   describe "POST /api/v1/wordbooks" do
     context "with valid params" do
-      it "creates a wordbook" do
+      it "creates a wordbook for the current user" do
         expect {
-          post "/api/v1/wordbooks", params: { wordbook: { user_id: user.id, title: "English Vocab" } }
+          post "/api/v1/wordbooks", params: { wordbook: { title: "English Vocab" } }, headers: headers
         }.to change(Wordbook, :count).by(1)
 
         expect(response).to have_http_status(:created)
         expect(response.parsed_body["title"]).to eq("English Vocab")
+        expect(response.parsed_body["user_id"]).to eq(user.id)
       end
     end
 
     context "with invalid params" do
       it "returns unprocessable_entity" do
-        post "/api/v1/wordbooks", params: { wordbook: { user_id: user.id, title: "" } }
+        post "/api/v1/wordbooks", params: { wordbook: { title: "" } }, headers: headers
 
         expect(response).to have_http_status(:unprocessable_entity)
         expect(response.parsed_body["errors"]).to include("Title can't be blank")
@@ -65,7 +82,7 @@ RSpec.describe "Api::V1::Wordbooks", type: :request do
 
     context "with valid params" do
       it "updates the wordbook" do
-        patch "/api/v1/wordbooks/#{wordbook.id}", params: { wordbook: { title: "Updated Title" } }
+        patch "/api/v1/wordbooks/#{wordbook.id}", params: { wordbook: { title: "Updated Title" } }, headers: headers
 
         expect(response).to have_http_status(:ok)
         expect(response.parsed_body["title"]).to eq("Updated Title")
@@ -74,10 +91,18 @@ RSpec.describe "Api::V1::Wordbooks", type: :request do
 
     context "with invalid params" do
       it "returns unprocessable_entity" do
-        patch "/api/v1/wordbooks/#{wordbook.id}", params: { wordbook: { title: "" } }
+        patch "/api/v1/wordbooks/#{wordbook.id}", params: { wordbook: { title: "" } }, headers: headers
 
         expect(response).to have_http_status(:unprocessable_entity)
       end
+    end
+
+    it "returns not_found for another user's wordbook" do
+      other_wordbook = create(:wordbook)
+
+      patch "/api/v1/wordbooks/#{other_wordbook.id}", params: { wordbook: { title: "Hacked" } }, headers: headers
+
+      expect(response).to have_http_status(:not_found)
     end
   end
 
@@ -86,10 +111,18 @@ RSpec.describe "Api::V1::Wordbooks", type: :request do
       wordbook = create(:wordbook, user: user)
 
       expect {
-        delete "/api/v1/wordbooks/#{wordbook.id}"
+        delete "/api/v1/wordbooks/#{wordbook.id}", headers: headers
       }.to change(Wordbook, :count).by(-1)
 
       expect(response).to have_http_status(:no_content)
+    end
+
+    it "returns not_found for another user's wordbook" do
+      other_wordbook = create(:wordbook)
+
+      delete "/api/v1/wordbooks/#{other_wordbook.id}", headers: headers
+
+      expect(response).to have_http_status(:not_found)
     end
   end
 end
