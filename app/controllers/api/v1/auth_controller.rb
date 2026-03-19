@@ -2,12 +2,13 @@ module Api
   module V1
     class AuthController < ApplicationController
       include GoogleAuthenticatable
-      include GuestAuthenticatable
+
+      skip_before_action :authenticate_user!
 
       def guest
         provider_uid = SecureRandom.uuid
         user = User.create!(provider: "guest", provider_uid: provider_uid, guest_expires_at: 7.days.from_now)
-        token = generate_guest_token(provider_uid)
+        token = encode_jwt(user.id, expires_at: user.guest_expires_at)
 
         render json: { user: user.as_json(only: [ :guest_expires_at ]), token: token }, status: :created
       end
@@ -36,7 +37,7 @@ module Api
           u.avatar_url = payload["picture"]
         end
 
-        render json: { user: user.as_json(only: [ :email, :name, :avatar_url ]) }, status: :ok
+        render json: { user: user.as_json(only: [ :email, :name, :avatar_url ]), token: encode_jwt(user.id) }, status: :ok
       end
     end
   end
