@@ -4,7 +4,7 @@ module Api
       before_action :set_meaning, only: [ :show, :update, :destroy ]
 
       def index
-        meanings = Meaning.all
+        meanings = Meaning.joins(word: :wordbook).where(wordbooks: { user_id: current_user.id })
         render json: meanings
       end
 
@@ -13,7 +13,8 @@ module Api
       end
 
       def create
-        meaning = Meaning.new(meaning_params)
+        word = Word.joins(:wordbook).where(wordbooks: { user_id: current_user.id }).find(meaning_params[:word_id])
+        meaning = word.meanings.new(meaning_params.except(:word_id))
 
         if meaning.save
           render json: meaning, status: :created
@@ -23,7 +24,7 @@ module Api
       end
 
       def update
-        if @meaning.update(meaning_params)
+        if @meaning.update(meaning_params.except(:word_id))
           render json: @meaning
         else
           render json: { errors: @meaning.errors.full_messages }, status: :unprocessable_entity
@@ -38,7 +39,7 @@ module Api
       private
 
       def set_meaning
-        @meaning = Meaning.find(params[:id])
+        @meaning = Meaning.joins(word: :wordbook).where(wordbooks: { user_id: current_user.id }).find(params[:id])
       end
 
       def meaning_params
