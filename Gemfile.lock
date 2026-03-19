@@ -396,6 +396,7 @@ DEPENDENCIES
   dotenv-rails
   factory_bot_rails
   googleauth
+  jwt
   kamal
   openssl
   pg (~> 1.1)

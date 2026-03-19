@@ -34,6 +34,9 @@ gem "thruster", require: false
 # Google authentication library for ID token verification
 gem "googleauth"
 
+# JWT token generation and verification
+gem "jwt"
+
 gem "openssl"
 
 group :development, :test do
