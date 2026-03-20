@@ -4,7 +4,7 @@ module Api
       before_action :set_example, only: [ :show, :update, :destroy ]
 
       def index
-        examples = Example.all
+        examples = Example.joins(word: :wordbook).where(wordbooks: { user_id: current_user.id })
         render json: examples
       end
 
@@ -13,7 +13,8 @@ module Api
       end
 
       def create
-        example = Example.new(example_params)
+        word = Word.joins(:wordbook).where(wordbooks: { user_id: current_user.id }).find(example_params[:word_id])
+        example = word.examples.new(example_params.except(:word_id))
 
         if example.save
           render json: example, status: :created
@@ -23,7 +24,7 @@ module Api
       end
 
       def update
-        if @example.update(example_params)
+        if @example.update(example_params.except(:word_id))
           render json: @example
         else
           render json: { errors: @example.errors.full_messages }, status: :unprocessable_entity
@@ -38,7 +39,7 @@ module Api
       private
 
       def set_example
-        @example = Example.find(params[:id])
+        @example = Example.joins(word: :wordbook).where(wordbooks: { user_id: current_user.id }).find(params[:id])
       end
 
       def example_params

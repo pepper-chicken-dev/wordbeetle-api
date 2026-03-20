@@ -4,7 +4,7 @@ module Api
       before_action :set_wordbook, only: [ :show, :update, :destroy ]
 
       def index
-        wordbooks = Wordbook.all
+        wordbooks = current_user.wordbooks
         render json: wordbooks
       end
 
@@ -13,7 +13,7 @@ module Api
       end
 
       def create
-        wordbook = Wordbook.new(wordbook_params)
+        wordbook = current_user.wordbooks.new(wordbook_params)
 
         if wordbook.save
           render json: wordbook, status: :created
@@ -38,11 +38,11 @@ module Api
       private
 
       def set_wordbook
-        @wordbook = Wordbook.find(params[:id])
+        @wordbook = current_user.wordbooks.find(params[:id])
       end
 
       def wordbook_params
-        params.require(:wordbook).permit(:user_id, :title)
+        params.require(:wordbook).permit(:title)
       end
     end
   end

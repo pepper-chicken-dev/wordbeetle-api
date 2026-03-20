@@ -4,8 +4,8 @@ module Api
       before_action :set_setting, only: [ :show, :update, :destroy ]
 
       def index
-        settings = Setting.all
-        render json: settings.map { |s| setting_response(s) }
+        setting = current_user.setting
+        render json: setting ? [ setting_response(setting) ] : []
       end
 
       def show
@@ -13,7 +13,7 @@ module Api
       end
 
       def create
-        setting = Setting.new(build_setting_params)
+        setting = current_user.build_setting(build_setting_params)
 
         if setting.save
           render json: setting_response(setting), status: :created
@@ -38,12 +38,12 @@ module Api
       private
 
       def set_setting
-        @setting = Setting.find(params[:id])
+        @setting = current_user.setting
+        raise ActiveRecord::RecordNotFound unless @setting
       end
 
       def setting_params
         params.require(:setting).permit(
-          :user_id,
           hard_interval: [ :days, :hours, :minutes ],
           uncertain_interval: [ :days, :hours, :minutes ],
           easy_interval: [ :days, :hours, :minutes ]
@@ -52,7 +52,7 @@ module Api
 
       def build_setting_params
         permitted = setting_params
-        result = permitted.slice(:user_id).to_h
+        result = {}
 
         %i[hard_interval uncertain_interval easy_interval].each do |attr|
           next unless permitted[attr]

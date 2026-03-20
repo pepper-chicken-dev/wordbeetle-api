@@ -2,16 +2,24 @@ require "rails_helper"
 
 RSpec.describe "Api::V1::Words", type: :request do
   let(:user) { create(:user) }
+  let(:headers) { auth_headers_for(user) }
   let(:wordbook) { create(:wordbook, user: user) }
 
   describe "GET /api/v1/words" do
-    it "returns all words" do
+    it "returns current user's words" do
       create_list(:word, 3, wordbook: wordbook)
+      create(:word) # another user's word
 
-      get "/api/v1/words"
+      get "/api/v1/words", headers: headers
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.size).to eq(3)
+    end
+
+    it "returns 401 without authentication" do
+      get "/api/v1/words"
+
+      expect(response).to have_http_status(:unauthorized)
     end
   end
 
@@ -19,10 +27,18 @@ RSpec.describe "Api::V1::Words", type: :request do
     it "returns the word" do
       word = create(:word, wordbook: wordbook, spelling: "apple")
 
-      get "/api/v1/words/#{word.id}"
+      get "/api/v1/words/#{word.id}", headers: headers
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body["spelling"]).to eq("apple")
+    end
+
+    it "returns not_found for another user's word" do
+      other_word = create(:word)
+
+      get "/api/v1/words/#{other_word.id}", headers: headers
+
+      expect(response).to have_http_status(:not_found)
     end
   end
 
@@ -30,7 +46,7 @@ RSpec.describe "Api::V1::Words", type: :request do
     context "with valid params" do
       it "creates a word" do
         expect {
-          post "/api/v1/words", params: { word: { wordbook_id: wordbook.id, spelling: "banana", status: "not_studied" } }
+          post "/api/v1/words", params: { word: { wordbook_id: wordbook.id, spelling: "banana", status: "not_studied" } }, headers: headers
         }.to change(Word, :count).by(1)
 
         expect(response).to have_http_status(:created)
@@ -40,11 +56,19 @@ RSpec.describe "Api::V1::Words", type: :request do
 
     context "with invalid params" do
       it "returns unprocessable_entity" do
-        post "/api/v1/words", params: { word: { wordbook_id: wordbook.id, spelling: "", status: "not_studied" } }
+        post "/api/v1/words", params: { word: { wordbook_id: wordbook.id, spelling: "", status: "not_studied" } }, headers: headers
 
         expect(response).to have_http_status(:unprocessable_entity)
         expect(response.parsed_body["errors"]).to include("Spelling can't be blank")
       end
+    end
+
+    it "returns not_found when wordbook belongs to another user" do
+      other_wordbook = create(:wordbook)
+
+      post "/api/v1/words", params: { word: { wordbook_id: other_wordbook.id, spelling: "test", status: "not_studied" } }, headers: headers
+
+      expect(response).to have_http_status(:not_found)
     end
   end
 
@@ -52,10 +76,18 @@ RSpec.describe "Api::V1::Words", type: :request do
     let(:word) { create(:word, wordbook: wordbook) }
 
     it "updates the word" do
-      patch "/api/v1/words/#{word.id}", params: { word: { spelling: "cherry" } }
+      patch "/api/v1/words/#{word.id}", params: { word: { spelling: "cherry" } }, headers: headers
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body["spelling"]).to eq("cherry")
+    end
+
+    it "returns not_found for another user's word" do
+      other_word = create(:word)
+
+      patch "/api/v1/words/#{other_word.id}", params: { word: { spelling: "hacked" } }, headers: headers
+
+      expect(response).to have_http_status(:not_found)
     end
   end
 
@@ -64,10 +96,18 @@ RSpec.describe "Api::V1::Words", type: :request do
       word = create(:word, wordbook: wordbook)
 
       expect {
-        delete "/api/v1/words/#{word.id}"
+        delete "/api/v1/words/#{word.id}", headers: headers
       }.to change(Word, :count).by(-1)
 
       expect(response).to have_http_status(:no_content)
+    end
+
+    it "returns not_found for another user's word" do
+      other_word = create(:word)
+
+      delete "/api/v1/words/#{other_word.id}", headers: headers
+
+      expect(response).to have_http_status(:not_found)
     end
   end
 end
