@@ -773,6 +773,7 @@ components:
           enum: [google, guest]
         provider_uid:
           type: string
+          nullable: true
         email:
           type: string
           nullable: true
