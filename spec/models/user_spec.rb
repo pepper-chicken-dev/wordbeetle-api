@@ -10,9 +10,21 @@ RSpec.describe User, type: :model do
     subject { build(:user) }
 
     it { is_expected.to validate_presence_of(:provider) }
-    it { is_expected.to validate_presence_of(:provider_uid) }
     it { is_expected.to validate_uniqueness_of(:email).allow_nil }
-    it { is_expected.to validate_uniqueness_of(:provider_uid).scoped_to(:provider) }
+
+    context "when provider is google" do
+      subject { build(:user, provider: "google") }
+
+      it { is_expected.to validate_presence_of(:provider_uid) }
+      it { is_expected.to validate_uniqueness_of(:provider_uid).scoped_to(:provider) }
+    end
+
+    context "when provider is guest" do
+      it "does not require provider_uid" do
+        user = build(:user, :guest, provider_uid: nil)
+        expect(user).to be_valid
+      end
+    end
   end
 
   describe "enum" do
