@@ -123,7 +123,7 @@ RSpec.describe "Api::V1::Auth", type: :request do
     context "when email is already registered with a different provider" do
       before do
         allow(Google::Auth::IDTokens).to receive(:verify_oidc).and_return(google_payload)
-        create(:user, :guest, provider_uid: "guest_uid_999", email: "test@example.com")
+        create(:user, :guest, email: "test@example.com")
       end
 
       it "returns conflict" do

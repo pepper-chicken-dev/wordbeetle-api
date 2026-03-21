@@ -6,8 +6,7 @@ module Api
       skip_before_action :authenticate_user!
 
       def guest
-        provider_uid = SecureRandom.uuid
-        user = User.create!(provider: "guest", provider_uid: provider_uid, guest_expires_at: 7.days.from_now)
+        user = User.create!(provider: "guest", guest_expires_at: 7.days.from_now)
         token = encode_jwt(user.id, expires_at: user.guest_expires_at)
 
         render json: { user: user.as_json(only: [ :guest_expires_at ]), token: token }, status: :created

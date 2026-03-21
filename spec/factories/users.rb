@@ -7,6 +7,7 @@ FactoryBot.define do
 
     trait :guest do
       provider { "guest" }
+      provider_uid { nil }
       email { nil }
       name { nil }
       guest_expires_at { 30.days.from_now }
