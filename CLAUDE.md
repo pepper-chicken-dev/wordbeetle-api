@@ -20,6 +20,11 @@ Read these as needed based on the task.
 - `docs/requirements.md` — Feature requirements and priorities (P0/P1/P2). Currently working on P0 items.
 - `docs/er_diagram.plantuml` — Database ER diagram
 
+## Workflow
+
+- Before starting implementation, enter plan mode to design the approach and align with the user.
+- When beginning work, always pull the latest main branch and create a new branch with an appropriate name before making any changes.
+
 ## Communication
 
 - Respond in Japanese
