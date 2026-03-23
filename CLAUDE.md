@@ -26,13 +26,7 @@ Read these as needed based on the task.
   - The plan must include a commit strategy: define how to group changes into logical commits and a draft commit message for each.
 - When beginning work, always pull the latest main branch and create a new branch with an appropriate name before making any changes.
 - During implementation, commit incrementally according to the plan. Create each commit as soon as the corresponding unit of work is complete, rather than batching all commits at the end.
-
-## Commit Messages
-
-- Write in English
-- Use the Conventional Commits format: `<type>: <description>`
-  - Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`
-- Do NOT include `Co-Authored-By` or any AI attribution
+- When committing, follow the rules defined in `.claude/skills/git-commit/SKILL.md`.
 
 ## Communication
 
