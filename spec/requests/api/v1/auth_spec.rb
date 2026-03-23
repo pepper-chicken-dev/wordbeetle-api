@@ -133,5 +133,169 @@ RSpec.describe "Api::V1::Auth", type: :request do
         expect(response.parsed_body["error"]).to include("already registered")
       end
     end
+
+    context "with guest_token (guest migration)" do
+      let(:guest_user) { create(:user, :guest) }
+      let(:guest_token) do
+        JWT.encode(
+          { sub: guest_user.id, exp: guest_user.guest_expires_at.to_i, iat: Time.current.to_i },
+          Rails.application.secret_key_base,
+          "HS256"
+        )
+      end
+
+      before do
+        allow(Google::Auth::IDTokens).to receive(:verify_oidc).and_return(google_payload)
+      end
+
+      context "when Google account does not exist (in-place conversion)" do
+        let!(:wordbook) { create(:wordbook, user: guest_user, title: "Guest Wordbook") }
+        let!(:word) { create(:word, wordbook: wordbook, spelling: "apple") }
+        let!(:meaning) { create(:meaning, word: word, content: "りんご") }
+        let!(:example) { create(:example, word: word, sentence: "I like apples.", translation: "りんごが好きです。") }
+        let!(:setting) { create(:setting, user: guest_user) }
+
+        it "converts guest user to Google user and returns ok" do
+          expect {
+            post "/api/v1/auth/google",
+                 params: { guest_token: guest_token },
+                 headers: { "Authorization" => "Bearer valid_token" }
+          }.not_to change(User, :count)
+
+          expect(response).to have_http_status(:ok)
+
+          body = response.parsed_body
+          expect(body["user"]["email"]).to eq("test@example.com")
+          expect(body["user"]["name"]).to eq("Test User")
+          expect(body["user"]["avatar_url"]).to eq("https://example.com/avatar.jpg")
+          expect(body["token"]).to be_present
+        end
+
+        it "updates guest user attributes to Google user" do
+          post "/api/v1/auth/google",
+               params: { guest_token: guest_token },
+               headers: { "Authorization" => "Bearer valid_token" }
+
+          guest_user.reload
+          expect(guest_user.provider).to eq("google")
+          expect(guest_user.provider_uid).to eq("google_uid_123")
+          expect(guest_user.email).to eq("test@example.com")
+          expect(guest_user.guest_expires_at).to be_nil
+        end
+
+        it "preserves all guest data (wordbooks, words, meanings, examples, settings)" do
+          post "/api/v1/auth/google",
+               params: { guest_token: guest_token },
+               headers: { "Authorization" => "Bearer valid_token" }
+
+          guest_user.reload
+          expect(guest_user.wordbooks.count).to eq(1)
+          expect(guest_user.wordbooks.first.title).to eq("Guest Wordbook")
+          expect(guest_user.wordbooks.first.words.count).to eq(1)
+          expect(guest_user.wordbooks.first.words.first.meanings.count).to eq(1)
+          expect(guest_user.wordbooks.first.words.first.examples.count).to eq(1)
+          expect(guest_user.setting).to be_present
+        end
+
+        it "returns a JWT token for the converted user" do
+          post "/api/v1/auth/google",
+               params: { guest_token: guest_token },
+               headers: { "Authorization" => "Bearer valid_token" }
+
+          token = response.parsed_body["token"]
+          decoded = JWT.decode(token, Rails.application.secret_key_base, true, algorithm: "HS256")
+          expect(decoded.first["sub"]).to eq(guest_user.id)
+        end
+      end
+
+      context "when Google account already exists (merge)" do
+        let!(:google_user) { create(:user, provider: "google", provider_uid: "google_uid_123", email: "test@example.com") }
+        let!(:guest_wordbook) { create(:wordbook, user: guest_user, title: "Guest Wordbook") }
+        let!(:guest_word) { create(:word, wordbook: guest_wordbook, spelling: "banana") }
+        let!(:guest_meaning) { create(:meaning, word: guest_word, content: "バナナ") }
+        let!(:guest_setting) { create(:setting, user: guest_user) }
+
+        it "merges guest data into existing Google user and deletes guest" do
+          expect {
+            post "/api/v1/auth/google",
+                 params: { guest_token: guest_token },
+                 headers: { "Authorization" => "Bearer valid_token" }
+          }.to change(User, :count).by(-1)
+
+          expect(response).to have_http_status(:ok)
+          expect { guest_user.reload }.to raise_error(ActiveRecord::RecordNotFound)
+        end
+
+        it "transfers wordbooks to the Google user" do
+          post "/api/v1/auth/google",
+               params: { guest_token: guest_token },
+               headers: { "Authorization" => "Bearer valid_token" }
+
+          expect(google_user.wordbooks.count).to eq(1)
+          expect(google_user.wordbooks.first.title).to eq("Guest Wordbook")
+          expect(google_user.wordbooks.first.words.first.meanings.count).to eq(1)
+        end
+
+        it "transfers setting when Google user has no setting" do
+          post "/api/v1/auth/google",
+               params: { guest_token: guest_token },
+               headers: { "Authorization" => "Bearer valid_token" }
+
+          expect(google_user.reload.setting).to be_present
+        end
+
+        it "keeps Google user setting when both have settings" do
+          google_setting = create(:setting, user: google_user, hard_interval: 2.days)
+
+          post "/api/v1/auth/google",
+               params: { guest_token: guest_token },
+               headers: { "Authorization" => "Bearer valid_token" }
+
+          google_user.reload
+          expect(google_user.setting.id).to eq(google_setting.id)
+        end
+
+        it "returns a JWT token for the Google user" do
+          post "/api/v1/auth/google",
+               params: { guest_token: guest_token },
+               headers: { "Authorization" => "Bearer valid_token" }
+
+          token = response.parsed_body["token"]
+          decoded = JWT.decode(token, Rails.application.secret_key_base, true, algorithm: "HS256")
+          expect(decoded.first["sub"]).to eq(google_user.id)
+        end
+      end
+
+      context "when guest_token is invalid" do
+        it "returns unauthorized" do
+          post "/api/v1/auth/google",
+               params: { guest_token: "invalid_token" },
+               headers: { "Authorization" => "Bearer valid_token" }
+
+          expect(response).to have_http_status(:unauthorized)
+          expect(response.parsed_body["error"]).to eq("Invalid guest token")
+        end
+      end
+
+      context "when guest_token belongs to a Google user" do
+        let(:google_user) { create(:user, provider: "google", provider_uid: "other_uid") }
+        let(:non_guest_token) do
+          JWT.encode(
+            { sub: google_user.id, exp: 30.days.from_now.to_i, iat: Time.current.to_i },
+            Rails.application.secret_key_base,
+            "HS256"
+          )
+        end
+
+        it "returns unauthorized" do
+          post "/api/v1/auth/google",
+               params: { guest_token: non_guest_token },
+               headers: { "Authorization" => "Bearer valid_token" }
+
+          expect(response).to have_http_status(:unauthorized)
+          expect(response.parsed_body["error"]).to eq("Invalid guest token")
+        end
+      end
+    end
   end
 end

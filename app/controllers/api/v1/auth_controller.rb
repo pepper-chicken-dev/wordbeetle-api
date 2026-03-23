@@ -2,6 +2,7 @@ module Api
   module V1
     class AuthController < ApplicationController
       include GoogleAuthenticatable
+      include GuestMigratable
 
       skip_before_action :authenticate_user!
 
@@ -21,6 +22,10 @@ module Api
 
         return render json: { error: "Invalid ID token" }, status: :unauthorized unless payload
 
+        if params[:guest_token].present?
+          return handle_guest_migration(payload)
+        end
+
         email = payload["email"]
         existing_user = User.find_by(email: email) if email.present?
 
@@ -37,6 +42,21 @@ module Api
         end
 
         render json: { user: user.as_json(only: [ :email, :name, :avatar_url ]), token: encode_jwt(user.id) }, status: :ok
+      end
+      private
+
+      def handle_guest_migration(google_payload)
+        guest_user = find_guest_user_from_token(params[:guest_token])
+
+        return render json: { error: "Invalid guest token" }, status: :unauthorized unless guest_user
+
+        result = migrate_guest_to_google(guest_user, google_payload)
+
+        if result[:success]
+          render json: { user: result[:user].as_json(only: [ :email, :name, :avatar_url ]), token: encode_jwt(result[:user].id) }, status: :ok
+        else
+          render json: { error: result[:error] }, status: :unprocessable_entity
+        end
       end
     end
   end

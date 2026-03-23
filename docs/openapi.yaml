@@ -42,8 +42,23 @@ paths:
         Verifies a Google ID token and finds or creates the user.
         Returns a JWT token for subsequent API requests.
         If the email is already registered with a different provider, returns 409 Conflict.
+
+        **Guest migration:** When `guest_token` is provided in the request body,
+        migrates the guest user's data (wordbooks, words, meanings, examples, settings)
+        to the Google account. If the Google account already exists, guest data is merged
+        into it; otherwise, the guest user record is converted in-place.
       security:
         - googleIdToken: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                guest_token:
+                  type: string
+                  description: JWT token of the guest user to migrate data from (optional)
       responses:
         "200":
           description: Authentication successful
@@ -80,6 +95,12 @@ paths:
                 $ref: "#/components/schemas/Error"
         "409":
           description: Email already registered with another provider
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          description: Guest migration failed (e.g., guest_token user is not a guest)
           content:
             application/json:
               schema:

@@ -37,6 +37,35 @@
 
 ゲスト認証のJWT有効期限は、ユーザーレコードの`guest_expires_at`と同一の値を使用。これによりDBとトークンの有効期限が一致することを保証。
 
+## ゲストユーザーデータの引き継ぎ（移行）
+
+ゲストユーザーが Google 認証で本登録する際、`POST /api/v1/auth/google` に `guest_token` パラメータを付与することでデータを引き継ぐ。
+
+```
+[クライアント] --Bearer Google ID Token + body { guest_token: JWT }--> POST /api/v1/auth/google --> [移行 + JWT発行]
+```
+
+### フロー
+
+1. クライアントが Google ID token を `Authorization: Bearer <id_token>` で送信（通常と同じ）
+2. リクエストボディに `{ "guest_token": "<guest_jwt>" }` を含める
+3. サーバーが Google ID token を検証し、guest_token から対象ゲストユーザーを特定
+4. 移行処理を実行し、新しい JWT を返却
+
+### 2つのシナリオ
+
+| シナリオ | 条件 | 処理 |
+|---------|------|------|
+| インプレース変換 | Google アカウントが未登録 | ゲストユーザーレコードを Google ユーザーに変換。全データがそのまま保持される |
+| マージ | Google アカウントが既に存在 | ゲストの単語帳を既存 Google ユーザーに移行。ゲストユーザーは削除 |
+
+### エラーレスポンス（移行固有）
+
+| ステータス | 条件 | レスポンス |
+|-----------|------|-----------|
+| 401 Unauthorized | 無効な guest_token / ゲストユーザーが見つからない | `{ "error": "Invalid guest token" }` |
+| 422 Unprocessable Entity | guest_token のユーザーがゲストでない | `{ "error": "User is not a guest" }` |
+
 ## 認可（リソーススコーピング）
 
 全リソースエンドポイントは`current_user`を起点にスコーピング:
