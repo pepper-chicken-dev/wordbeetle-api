@@ -150,6 +150,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Wordbook"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "422":
@@ -203,6 +205,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Wordbook"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
@@ -278,6 +282,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Word"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "422":
@@ -337,6 +343,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Word"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
@@ -409,6 +417,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Meaning"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "422":
@@ -465,6 +475,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Meaning"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
@@ -539,6 +551,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Example"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "422":
@@ -597,6 +611,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Example"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
@@ -668,6 +684,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Setting"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "422":
@@ -725,6 +743,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Setting"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
@@ -777,6 +797,24 @@ components:
             $ref: "#/components/schemas/Error"
     NotFound:
       description: Resource not found or not owned by current user
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    BadRequest:
+      description: Required parameter missing
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Conflict:
+      description: Duplicate record
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    InternalServerError:
+      description: Unexpected server error (production only)
       content:
         application/json:
           schema:
