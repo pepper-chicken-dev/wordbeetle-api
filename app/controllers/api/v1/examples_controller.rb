@@ -1,10 +1,11 @@
 module Api
   module V1
     class ExamplesController < ApplicationController
+      before_action :set_word
       before_action :set_example, only: [ :show, :update, :destroy ]
 
       def index
-        examples = Example.joins(word: :wordbook).where(wordbooks: { user_id: current_user.id })
+        examples = @word.examples
         render json: examples
       end
 
@@ -13,8 +14,7 @@ module Api
       end
 
       def create
-        word = Word.joins(:wordbook).where(wordbooks: { user_id: current_user.id }).find(example_params[:word_id])
-        example = word.examples.new(example_params.except(:word_id))
+        example = @word.examples.new(example_params)
 
         if example.save
           render json: example, status: :created
@@ -24,7 +24,7 @@ module Api
       end
 
       def update
-        if @example.update(example_params.except(:word_id))
+        if @example.update(example_params)
           render json: @example
         else
           render json: { errors: @example.errors.full_messages }, status: :unprocessable_entity
@@ -38,12 +38,16 @@ module Api
 
       private
 
+      def set_word
+        @word = current_user.wordbooks.find(params[:wordbook_id]).words.find(params[:word_id])
+      end
+
       def set_example
-        @example = Example.joins(word: :wordbook).where(wordbooks: { user_id: current_user.id }).find(params[:id])
+        @example = @word.examples.find(params[:id])
       end
 
       def example_params
-        params.require(:example).permit(:word_id, :sentence, :translation, :display_order)
+        params.require(:example).permit(:sentence, :translation, :display_order)
       end
     end
   end

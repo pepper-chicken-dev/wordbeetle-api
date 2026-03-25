@@ -14,10 +14,11 @@ Rails.application.routes.draw do
 
       # Resources
       resources :wordbooks do
-        resources :words
+        resources :words do
+          resources :meanings
+          resources :examples
+        end
       end
-      resources :meanings
-      resources :examples
       resources :settings
     end
   end
