@@ -13,8 +13,9 @@ Rails.application.routes.draw do
       post "auth/google", to: "auth#google"
 
       # Resources
-      resources :wordbooks
-      resources :words
+      resources :wordbooks do
+        resources :words
+      end
       resources :meanings
       resources :examples
       resources :settings

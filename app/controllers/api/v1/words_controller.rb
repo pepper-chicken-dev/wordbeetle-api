@@ -1,10 +1,11 @@
 module Api
   module V1
     class WordsController < ApplicationController
+      before_action :set_wordbook
       before_action :set_word, only: [ :show, :update, :destroy ]
 
       def index
-        words = Word.joins(:wordbook).where(wordbooks: { user_id: current_user.id })
+        words = @wordbook.words
         render json: words
       end
 
@@ -13,8 +14,7 @@ module Api
       end
 
       def create
-        wordbook = current_user.wordbooks.find(word_params[:wordbook_id])
-        word = wordbook.words.new(word_params.except(:wordbook_id))
+        word = @wordbook.words.new(word_params)
 
         if word.save
           render json: word, status: :created
@@ -24,7 +24,7 @@ module Api
       end
 
       def update
-        if @word.update(word_params.except(:wordbook_id))
+        if @word.update(word_params)
           render json: @word
         else
           render json: { errors: @word.errors.full_messages }, status: :unprocessable_entity
@@ -38,12 +38,16 @@ module Api
 
       private
 
+      def set_wordbook
+        @wordbook = current_user.wordbooks.find(params[:wordbook_id])
+      end
+
       def set_word
-        @word = Word.joins(:wordbook).where(wordbooks: { user_id: current_user.id }).find(params[:id])
+        @word = @wordbook.words.find(params[:id])
       end
 
       def word_params
-        params.require(:word).permit(:wordbook_id, :spelling, :status, :next_review_at)
+        params.require(:word).permit(:spelling, :status, :next_review_at)
       end
     end
   end
