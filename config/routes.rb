@@ -19,7 +19,7 @@ Rails.application.routes.draw do
           resources :examples
         end
       end
-      resources :settings
+      resource :setting, only: [ :show, :create, :update, :destroy ]
     end
   end
 

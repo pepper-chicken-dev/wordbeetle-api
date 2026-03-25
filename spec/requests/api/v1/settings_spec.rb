@@ -4,40 +4,11 @@ RSpec.describe "Api::V1::Settings", type: :request do
   let(:user) { create(:user) }
   let(:headers) { auth_headers_for(user) }
 
-  describe "GET /api/v1/settings" do
-    it "returns current user's settings" do
-      create(:setting, user: user)
-
-      get "/api/v1/settings", headers: headers
-
-      expect(response).to have_http_status(:ok)
-      body = response.parsed_body
-      expect(body.size).to eq(1)
-      expect(body.first["hard_interval"]).to include("days", "hours", "minutes")
-    end
-
-    it "does not return other users' settings" do
-      create(:setting, user: user)
-      create(:setting) # another user's setting
-
-      get "/api/v1/settings", headers: headers
-
-      expect(response).to have_http_status(:ok)
-      expect(response.parsed_body.size).to eq(1)
-    end
-
-    it "returns 401 without authentication" do
-      get "/api/v1/settings"
-
-      expect(response).to have_http_status(:unauthorized)
-    end
-  end
-
-  describe "GET /api/v1/settings/:id" do
+  describe "GET /api/v1/setting" do
     it "returns the current user's setting" do
       setting = create(:setting, user: user)
 
-      get "/api/v1/settings/#{setting.id}", headers: headers
+      get "/api/v1/setting", headers: headers
 
       expect(response).to have_http_status(:ok)
       body = response.parsed_body
@@ -47,13 +18,19 @@ RSpec.describe "Api::V1::Settings", type: :request do
     end
 
     it "returns not_found when user has no setting" do
-      get "/api/v1/settings/999999", headers: headers
+      get "/api/v1/setting", headers: headers
 
       expect(response).to have_http_status(:not_found)
     end
+
+    it "returns 401 without authentication" do
+      get "/api/v1/setting"
+
+      expect(response).to have_http_status(:unauthorized)
+    end
   end
 
-  describe "POST /api/v1/settings" do
+  describe "POST /api/v1/setting" do
     context "with valid params" do
       it "creates a setting for the current user" do
         params = {
@@ -65,7 +42,7 @@ RSpec.describe "Api::V1::Settings", type: :request do
         }
 
         expect {
-          post "/api/v1/settings", params: params, headers: headers
+          post "/api/v1/setting", params: params, headers: headers
         }.to change(Setting, :count).by(1)
 
         expect(response).to have_http_status(:created)
@@ -81,18 +58,18 @@ RSpec.describe "Api::V1::Settings", type: :request do
           }
         }
 
-        post "/api/v1/settings", params: params, headers: headers
+        post "/api/v1/setting", params: params, headers: headers
 
         expect(response).to have_http_status(:unprocessable_entity)
       end
     end
   end
 
-  describe "PATCH /api/v1/settings/:id" do
+  describe "PATCH /api/v1/setting" do
     let!(:setting) { create(:setting, user: user) }
 
     it "updates the setting" do
-      patch "/api/v1/settings/#{setting.id}", params: {
+      patch "/api/v1/setting", params: {
         setting: {
           hard_interval: { days: 2, hours: 0, minutes: 0 }
         }
@@ -103,12 +80,12 @@ RSpec.describe "Api::V1::Settings", type: :request do
     end
   end
 
-  describe "DELETE /api/v1/settings/:id" do
+  describe "DELETE /api/v1/setting" do
     it "deletes the setting" do
       setting = create(:setting, user: user)
 
       expect {
-        delete "/api/v1/settings/#{setting.id}", headers: headers
+        delete "/api/v1/setting", headers: headers
       }.to change(Setting, :count).by(-1)
 
       expect(response).to have_http_status(:no_content)
