@@ -231,10 +231,12 @@ paths:
           $ref: "#/components/responses/NotFound"
 
   # ──────────────── Words ────────────────
-  /api/v1/words:
+  /api/v1/wordbooks/{wordbook_id}/words:
+    parameters:
+      - $ref: "#/components/parameters/WordbookId"
     get:
       tags: [Words]
-      summary: List current user's words
+      summary: List words in a wordbook
       security:
         - bearerAuth: []
       responses:
@@ -248,9 +250,11 @@ paths:
                   $ref: "#/components/schemas/Word"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
     post:
       tags: [Words]
-      summary: Create a word
+      summary: Create a word in a wordbook
       security:
         - bearerAuth: []
       requestBody:
@@ -263,10 +267,8 @@ paths:
               properties:
                 word:
                   type: object
-                  required: [wordbook_id, spelling, status]
+                  required: [spelling, status]
                   properties:
-                    wordbook_id:
-                      type: integer
                     spelling:
                       type: string
                     status:
@@ -286,6 +288,8 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
         "422":
           description: Validation error
           content:
@@ -293,8 +297,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ValidationErrors"
 
-  /api/v1/words/{id}:
+  /api/v1/wordbooks/{wordbook_id}/words/{id}:
     parameters:
+      - $ref: "#/components/parameters/WordbookId"
       - $ref: "#/components/parameters/Id"
     get:
       tags: [Words]
@@ -369,10 +374,13 @@ paths:
           $ref: "#/components/responses/NotFound"
 
   # ──────────────── Meanings ────────────────
-  /api/v1/meanings:
+  /api/v1/wordbooks/{wordbook_id}/words/{word_id}/meanings:
+    parameters:
+      - $ref: "#/components/parameters/WordbookId"
+      - $ref: "#/components/parameters/WordId"
     get:
       tags: [Meanings]
-      summary: List current user's meanings
+      summary: List meanings for a word
       security:
         - bearerAuth: []
       responses:
@@ -386,9 +394,11 @@ paths:
                   $ref: "#/components/schemas/Meaning"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
     post:
       tags: [Meanings]
-      summary: Create a meaning
+      summary: Create a meaning for a word
       security:
         - bearerAuth: []
       requestBody:
@@ -401,10 +411,8 @@ paths:
               properties:
                 meaning:
                   type: object
-                  required: [word_id, content, display_order]
+                  required: [content, display_order]
                   properties:
-                    word_id:
-                      type: integer
                     content:
                       type: string
                     display_order:
@@ -421,6 +429,8 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
         "422":
           description: Validation error
           content:
@@ -428,8 +438,10 @@ paths:
               schema:
                 $ref: "#/components/schemas/ValidationErrors"
 
-  /api/v1/meanings/{id}:
+  /api/v1/wordbooks/{wordbook_id}/words/{word_id}/meanings/{id}:
     parameters:
+      - $ref: "#/components/parameters/WordbookId"
+      - $ref: "#/components/parameters/WordId"
       - $ref: "#/components/parameters/Id"
     get:
       tags: [Meanings]
@@ -501,10 +513,13 @@ paths:
           $ref: "#/components/responses/NotFound"
 
   # ──────────────── Examples ────────────────
-  /api/v1/examples:
+  /api/v1/wordbooks/{wordbook_id}/words/{word_id}/examples:
+    parameters:
+      - $ref: "#/components/parameters/WordbookId"
+      - $ref: "#/components/parameters/WordId"
     get:
       tags: [Examples]
-      summary: List current user's examples
+      summary: List examples for a word
       security:
         - bearerAuth: []
       responses:
@@ -518,9 +533,11 @@ paths:
                   $ref: "#/components/schemas/Example"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
     post:
       tags: [Examples]
-      summary: Create an example
+      summary: Create an example for a word
       security:
         - bearerAuth: []
       requestBody:
@@ -533,10 +550,8 @@ paths:
               properties:
                 example:
                   type: object
-                  required: [word_id, sentence, translation, display_order]
+                  required: [sentence, translation, display_order]
                   properties:
-                    word_id:
-                      type: integer
                     sentence:
                       type: string
                     translation:
@@ -555,6 +570,8 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
         "422":
           description: Validation error
           content:
@@ -562,8 +579,10 @@ paths:
               schema:
                 $ref: "#/components/schemas/ValidationErrors"
 
-  /api/v1/examples/{id}:
+  /api/v1/wordbooks/{wordbook_id}/words/{word_id}/examples/{id}:
     parameters:
+      - $ref: "#/components/parameters/WordbookId"
+      - $ref: "#/components/parameters/WordId"
       - $ref: "#/components/parameters/Id"
     get:
       tags: [Examples]
@@ -636,11 +655,11 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
-  # ──────────────── Settings ────────────────
-  /api/v1/settings:
+  # ──────────────── Setting (singular resource) ────────────────
+  /api/v1/setting:
     get:
       tags: [Settings]
-      summary: List current user's settings
+      summary: Get the current user's setting
       security:
         - bearerAuth: []
       responses:
@@ -649,11 +668,11 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Setting"
+                $ref: "#/components/schemas/Setting"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
     post:
       tags: [Settings]
       summary: Create a setting
@@ -694,29 +713,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ValidationErrors"
-
-  /api/v1/settings/{id}:
-    parameters:
-      - $ref: "#/components/parameters/Id"
-    get:
-      tags: [Settings]
-      summary: Get a setting
-      security:
-        - bearerAuth: []
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Setting"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
-          $ref: "#/components/responses/NotFound"
     patch:
       tags: [Settings]
-      summary: Update a setting
+      summary: Update the setting
       security:
         - bearerAuth: []
       requestBody:
@@ -757,7 +756,7 @@ paths:
                 $ref: "#/components/schemas/ValidationErrors"
     delete:
       tags: [Settings]
-      summary: Delete a setting
+      summary: Delete the setting
       security:
         - bearerAuth: []
       responses:
@@ -783,6 +782,18 @@ components:
   parameters:
     Id:
       name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    WordbookId:
+      name: wordbook_id
+      in: path
+      required: true
+      schema:
+        type: integer
+    WordId:
+      name: word_id
       in: path
       required: true
       schema:
