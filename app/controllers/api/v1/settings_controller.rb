@@ -3,11 +3,6 @@ module Api
     class SettingsController < ApplicationController
       before_action :set_setting, only: [ :show, :update, :destroy ]
 
-      def index
-        setting = current_user.setting
-        render json: setting ? [ setting_response(setting) ] : []
-      end
-
       def show
         render json: setting_response(@setting)
       end

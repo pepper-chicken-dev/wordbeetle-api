@@ -13,11 +13,13 @@ Rails.application.routes.draw do
       post "auth/google", to: "auth#google"
 
       # Resources
-      resources :wordbooks
-      resources :words
-      resources :meanings
-      resources :examples
-      resources :settings
+      resources :wordbooks do
+        resources :words do
+          resources :meanings
+          resources :examples
+        end
+      end
+      resource :setting, only: [ :show, :create, :update, :destroy ]
     end
   end
 
