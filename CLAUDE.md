@@ -27,7 +27,7 @@ Read these as needed based on the task.
 - When beginning work, always pull the latest main branch and create a new branch with an appropriate name before making any changes.
 - During implementation, commit incrementally according to the plan. Create each commit as soon as the corresponding unit of work is complete, rather than batching all commits at the end.
 - When committing, follow the rules defined in `.claude/skills/git-commit/SKILL.md`.
-- After all implementation is complete, push the branch and create a PR following the rules in `.claude/skills/pull-request/SKILL.md`.
+- After the final commit, immediately push the branch and create a PR following the rules in `.claude/skills/pull-request/SKILL.md`. Do not stop or wait for user input between the last commit and PR creation.
 
 ## Communication
 
