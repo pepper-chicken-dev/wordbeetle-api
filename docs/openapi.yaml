@@ -237,6 +237,7 @@ paths:
     get:
       tags: [Words]
       summary: List words in a wordbook
+      description: Returns all words with their first meaning (by display_order) included.
       security:
         - bearerAuth: []
       responses:
@@ -247,7 +248,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Word"
+                  $ref: "#/components/schemas/WordWithFirstMeaning"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
@@ -304,15 +305,26 @@ paths:
     get:
       tags: [Words]
       summary: Get a word
+      description: |
+        Returns a word. Use the `include` query parameter to embed related resources.
+        Without `include`, only the word fields are returned (backward compatible).
       security:
         - bearerAuth: []
+      parameters:
+        - name: include
+          in: query
+          required: false
+          description: Comma-separated list of relations to include. Allowed values: meanings, examples.
+          schema:
+            type: string
+            example: meanings,examples
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Word"
+                $ref: "#/components/schemas/WordWithRelations"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
@@ -368,6 +380,30 @@ paths:
       responses:
         "204":
           description: No Content
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ──────────────── Test Words ────────────────
+  /api/v1/wordbooks/{wordbook_id}/test/words:
+    parameters:
+      - $ref: "#/components/parameters/WordbookId"
+    get:
+      tags: [Test]
+      summary: List reviewable words for test
+      description: |
+        Returns words that are due for review (next_review_at is null or in the past),
+        with their meanings and examples eager-loaded. Designed for the test/quiz page.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestWordsResponse"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
@@ -902,6 +938,59 @@ components:
         updated_at:
           type: string
           format: date-time
+
+    WordWithFirstMeaning:
+      allOf:
+        - $ref: "#/components/schemas/Word"
+        - type: object
+          properties:
+            first_meaning:
+              nullable: true
+              description: The meaning with the lowest display_order, or null if no meanings exist
+              allOf:
+                - $ref: "#/components/schemas/Meaning"
+
+    WordWithRelations:
+      allOf:
+        - $ref: "#/components/schemas/Word"
+        - type: object
+          properties:
+            meanings:
+              type: array
+              description: Present only when include=meanings is specified
+              items:
+                $ref: "#/components/schemas/Meaning"
+            examples:
+              type: array
+              description: Present only when include=examples is specified
+              items:
+                $ref: "#/components/schemas/Example"
+
+    TestWordsResponse:
+      type: object
+      properties:
+        wordbook:
+          type: object
+          properties:
+            id:
+              type: integer
+            title:
+              type: string
+        words:
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/Word"
+              - type: object
+                properties:
+                  meanings:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Meaning"
+                  examples:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Example"
 
     WordStatus:
       type: string
