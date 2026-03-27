@@ -69,6 +69,64 @@ RSpec.describe "Api::V1::Words", type: :request do
 
       expect(response).to have_http_status(:not_found)
     end
+
+    context "with include parameter" do
+      let(:word) { create(:word, wordbook: wordbook) }
+
+      before do
+        create(:meaning, word: word, content: "meaning1", display_order: 2)
+        create(:meaning, word: word, content: "meaning2", display_order: 1)
+        create(:example, word: word, sentence: "Example1", display_order: 2)
+        create(:example, word: word, sentence: "Example2", display_order: 1)
+      end
+
+      it "includes meanings when include=meanings" do
+        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}?include=meanings", headers: headers
+
+        expect(response).to have_http_status(:ok)
+        body = response.parsed_body
+        expect(body["meanings"].size).to eq(2)
+        expect(body["meanings"].map { |m| m["content"] }).to eq(%w[meaning2 meaning1])
+        expect(body).not_to have_key("examples")
+      end
+
+      it "includes examples when include=examples" do
+        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}?include=examples", headers: headers
+
+        expect(response).to have_http_status(:ok)
+        body = response.parsed_body
+        expect(body["examples"].size).to eq(2)
+        expect(body["examples"].map { |e| e["sentence"] }).to eq(%w[Example2 Example1])
+        expect(body).not_to have_key("meanings")
+      end
+
+      it "includes both when include=meanings,examples" do
+        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}?include=meanings,examples", headers: headers
+
+        expect(response).to have_http_status(:ok)
+        body = response.parsed_body
+        expect(body["meanings"].size).to eq(2)
+        expect(body["examples"].size).to eq(2)
+      end
+
+      it "ignores invalid include values" do
+        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}?include=wordbook,invalid", headers: headers
+
+        expect(response).to have_http_status(:ok)
+        body = response.parsed_body
+        expect(body).not_to have_key("wordbook")
+        expect(body).not_to have_key("invalid")
+      end
+
+      it "returns standard response without include parameter" do
+        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}", headers: headers
+
+        expect(response).to have_http_status(:ok)
+        body = response.parsed_body
+        expect(body).not_to have_key("meanings")
+        expect(body).not_to have_key("examples")
+      end
+    end
   end
 
   describe "POST /api/v1/wordbooks/:wordbook_id/words" do

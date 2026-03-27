@@ -12,7 +12,11 @@ module Api
       end
 
       def show
-        render json: @word
+        includes = parse_includes
+        if includes.any?
+          @word = @wordbook.words.includes(*includes.map(&:to_sym)).find(params[:id])
+        end
+        render json: word_json(@word, includes: includes)
       end
 
       def create
@@ -46,6 +50,21 @@ module Api
 
       def set_word
         @word = @wordbook.words.find(params[:id])
+      end
+
+      ALLOWED_INCLUDES = %w[meanings examples].freeze
+
+      def parse_includes
+        return [] if params[:include].blank?
+        params[:include].split(",").map(&:strip).select { |i| ALLOWED_INCLUDES.include?(i) }
+      end
+
+      def word_json(word, includes: [])
+        json = word.as_json
+        includes.each do |assoc|
+          json[assoc] = word.public_send(assoc).sort_by(&:display_order).as_json
+        end
+        json
       end
 
       def word_params
