@@ -5,6 +5,7 @@ RSpec.describe Word, type: :model do
     it { is_expected.to belong_to(:wordbook) }
     it { is_expected.to have_many(:meanings).dependent(:destroy) }
     it { is_expected.to have_many(:examples).dependent(:destroy) }
+    it { is_expected.to have_one(:first_meaning).class_name("Meaning") }
   end
 
   describe "validations" do
@@ -17,6 +18,27 @@ RSpec.describe Word, type: :model do
       is_expected.to define_enum_for(:status)
         .with_values(not_studied: "not_studied", hard: "hard", uncertain: "uncertain", easy: "easy")
         .backed_by_column_of_type(:string)
+    end
+  end
+
+  describe "scopes" do
+    describe ".reviewable" do
+      let(:wordbook) { create(:wordbook) }
+
+      it "includes words with next_review_at as nil" do
+        word = create(:word, wordbook: wordbook, next_review_at: nil)
+        expect(Word.reviewable).to include(word)
+      end
+
+      it "includes words with next_review_at in the past" do
+        word = create(:word, wordbook: wordbook, next_review_at: 1.day.ago)
+        expect(Word.reviewable).to include(word)
+      end
+
+      it "excludes words with next_review_at in the future" do
+        word = create(:word, wordbook: wordbook, next_review_at: 1.day.from_now)
+        expect(Word.reviewable).not_to include(word)
+      end
     end
   end
 
