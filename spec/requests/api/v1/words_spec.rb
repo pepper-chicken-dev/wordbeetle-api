@@ -16,6 +16,26 @@ RSpec.describe "Api::V1::Words", type: :request do
       expect(response.parsed_body.size).to eq(3)
     end
 
+    it "includes first_meaning for each word" do
+      word = create(:word, wordbook: wordbook)
+      create(:meaning, word: word, content: "second", display_order: 2)
+      create(:meaning, word: word, content: "first", display_order: 1)
+
+      get "/api/v1/wordbooks/#{wordbook.id}/words", headers: headers
+
+      returned_word = response.parsed_body.find { |w| w["id"] == word.id }
+      expect(returned_word["first_meaning"]["content"]).to eq("first")
+      expect(returned_word["first_meaning"]["display_order"]).to eq(1)
+    end
+
+    it "returns null first_meaning when word has no meanings" do
+      create(:word, wordbook: wordbook)
+
+      get "/api/v1/wordbooks/#{wordbook.id}/words", headers: headers
+
+      expect(response.parsed_body.first["first_meaning"]).to be_nil
+    end
+
     it "returns 401 without authentication" do
       get "/api/v1/wordbooks/#{wordbook.id}/words"
 

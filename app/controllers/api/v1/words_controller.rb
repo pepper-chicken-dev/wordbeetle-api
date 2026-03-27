@@ -5,8 +5,10 @@ module Api
       before_action :set_word, only: [ :show, :update, :destroy ]
 
       def index
-        words = @wordbook.words
-        render json: words
+        words = @wordbook.words.includes(:first_meaning)
+        render json: words.map { |word|
+          word.as_json.merge(first_meaning: word.first_meaning&.as_json)
+        }
       end
 
       def show
