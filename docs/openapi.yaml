@@ -314,7 +314,7 @@ paths:
         - name: include
           in: query
           required: false
-          description: Comma-separated list of relations to include. Allowed values: meanings, examples.
+          description: "Comma-separated list of relations to include. Allowed values: meanings, examples."
           schema:
             type: string
             example: meanings,examples
