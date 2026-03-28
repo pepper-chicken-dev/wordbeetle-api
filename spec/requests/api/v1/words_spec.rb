@@ -16,6 +16,26 @@ RSpec.describe "Api::V1::Words", type: :request do
       expect(response.parsed_body.size).to eq(3)
     end
 
+    it "includes first_meaning for each word" do
+      word = create(:word, wordbook: wordbook)
+      create(:meaning, word: word, content: "second", display_order: 2)
+      create(:meaning, word: word, content: "first", display_order: 1)
+
+      get "/api/v1/wordbooks/#{wordbook.id}/words", headers: headers
+
+      returned_word = response.parsed_body.find { |w| w["id"] == word.id }
+      expect(returned_word["first_meaning"]["content"]).to eq("first")
+      expect(returned_word["first_meaning"]["display_order"]).to eq(1)
+    end
+
+    it "returns null first_meaning when word has no meanings" do
+      create(:word, wordbook: wordbook)
+
+      get "/api/v1/wordbooks/#{wordbook.id}/words", headers: headers
+
+      expect(response.parsed_body.first["first_meaning"]).to be_nil
+    end
+
     it "returns 401 without authentication" do
       get "/api/v1/wordbooks/#{wordbook.id}/words"
 
@@ -48,6 +68,64 @@ RSpec.describe "Api::V1::Words", type: :request do
       get "/api/v1/wordbooks/#{other_wordbook.id}/words/#{other_word.id}", headers: headers
 
       expect(response).to have_http_status(:not_found)
+    end
+
+    context "with include parameter" do
+      let(:word) { create(:word, wordbook: wordbook) }
+
+      before do
+        create(:meaning, word: word, content: "meaning1", display_order: 2)
+        create(:meaning, word: word, content: "meaning2", display_order: 1)
+        create(:example, word: word, sentence: "Example1", display_order: 2)
+        create(:example, word: word, sentence: "Example2", display_order: 1)
+      end
+
+      it "includes meanings when include=meanings" do
+        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}?include=meanings", headers: headers
+
+        expect(response).to have_http_status(:ok)
+        body = response.parsed_body
+        expect(body["meanings"].size).to eq(2)
+        expect(body["meanings"].map { |m| m["content"] }).to eq(%w[meaning2 meaning1])
+        expect(body).not_to have_key("examples")
+      end
+
+      it "includes examples when include=examples" do
+        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}?include=examples", headers: headers
+
+        expect(response).to have_http_status(:ok)
+        body = response.parsed_body
+        expect(body["examples"].size).to eq(2)
+        expect(body["examples"].map { |e| e["sentence"] }).to eq(%w[Example2 Example1])
+        expect(body).not_to have_key("meanings")
+      end
+
+      it "includes both when include=meanings,examples" do
+        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}?include=meanings,examples", headers: headers
+
+        expect(response).to have_http_status(:ok)
+        body = response.parsed_body
+        expect(body["meanings"].size).to eq(2)
+        expect(body["examples"].size).to eq(2)
+      end
+
+      it "ignores invalid include values" do
+        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}?include=wordbook,invalid", headers: headers
+
+        expect(response).to have_http_status(:ok)
+        body = response.parsed_body
+        expect(body).not_to have_key("wordbook")
+        expect(body).not_to have_key("invalid")
+      end
+
+      it "returns standard response without include parameter" do
+        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}", headers: headers
+
+        expect(response).to have_http_status(:ok)
+        body = response.parsed_body
+        expect(body).not_to have_key("meanings")
+        expect(body).not_to have_key("examples")
+      end
     end
   end
 

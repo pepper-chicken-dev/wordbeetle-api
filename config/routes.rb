@@ -14,6 +14,9 @@ Rails.application.routes.draw do
 
       # Resources
       resources :wordbooks do
+        namespace :test do
+          resources :words, only: [ :index ]
+        end
         resources :words do
           resources :meanings
           resources :examples
