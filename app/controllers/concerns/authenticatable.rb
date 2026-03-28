@@ -10,13 +10,13 @@ module Authenticatable
   private
 
   def authenticate_user!
-    token = request.headers["Authorization"]&.split("Bearer ")&.last
+    token = request.headers['Authorization']&.split('Bearer ')&.last
     return render_unauthorized unless token
 
     payload = decode_jwt(token)
     return render_unauthorized unless payload
 
-    @current_user = User.find_by(id: payload["sub"])
+    @current_user = User.find_by(id: payload['sub'])
     render_unauthorized unless @current_user
   end
 
@@ -25,6 +25,6 @@ module Authenticatable
   end
 
   def render_unauthorized
-    render json: { error: "Unauthorized" }, status: :unauthorized
+    render json: { error: 'Unauthorized' }, status: :unauthorized
   end
 end

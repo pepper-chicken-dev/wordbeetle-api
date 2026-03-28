@@ -1,7 +1,7 @@
 module Api
   module V1
     class SettingsController < ApplicationController
-      before_action :set_setting, only: [ :show, :update, :destroy ]
+      before_action :set_setting, only: %i[show update destroy]
 
       def show
         render json: setting_response(@setting)
@@ -13,7 +13,7 @@ module Api
         if setting.save
           render json: setting_response(setting), status: :created
         else
-          render json: { errors: setting.errors.full_messages }, status: :unprocessable_entity
+          render json: { errors: setting.errors.full_messages }, status: :unprocessable_content
         end
       end
 
@@ -21,7 +21,7 @@ module Api
         if @setting.update(build_setting_params)
           render json: setting_response(@setting)
         else
-          render json: { errors: @setting.errors.full_messages }, status: :unprocessable_entity
+          render json: { errors: @setting.errors.full_messages }, status: :unprocessable_content
         end
       end
 
@@ -38,10 +38,10 @@ module Api
       end
 
       def setting_params
-        params.require(:setting).permit(
-          hard_interval: [ :days, :hours, :minutes ],
-          uncertain_interval: [ :days, :hours, :minutes ],
-          easy_interval: [ :days, :hours, :minutes ]
+        params.expect(
+          setting: [hard_interval: %i[days hours minutes],
+                    uncertain_interval: %i[days hours minutes],
+                    easy_interval: %i[days hours minutes]]
         )
       end
 
@@ -78,8 +78,8 @@ module Api
         return nil if duration.blank?
 
         total_seconds = duration.to_i
-        days = total_seconds / 86400
-        hours = (total_seconds % 86400) / 3600
+        days = total_seconds / 86_400
+        hours = (total_seconds % 86_400) / 3600
         minutes = (total_seconds % 3600) / 60
 
         { days: days, hours: hours, minutes: minutes }

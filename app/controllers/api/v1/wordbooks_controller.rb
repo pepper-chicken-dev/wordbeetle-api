@@ -1,7 +1,7 @@
 module Api
   module V1
     class WordbooksController < ApplicationController
-      before_action :set_wordbook, only: [ :show, :update, :destroy ]
+      before_action :set_wordbook, only: %i[show update destroy]
 
       def index
         wordbooks = current_user.wordbooks
@@ -18,7 +18,7 @@ module Api
         if wordbook.save
           render json: wordbook, status: :created
         else
-          render json: { errors: wordbook.errors.full_messages }, status: :unprocessable_entity
+          render json: { errors: wordbook.errors.full_messages }, status: :unprocessable_content
         end
       end
 
@@ -26,7 +26,7 @@ module Api
         if @wordbook.update(wordbook_params)
           render json: @wordbook
         else
-          render json: { errors: @wordbook.errors.full_messages }, status: :unprocessable_entity
+          render json: { errors: @wordbook.errors.full_messages }, status: :unprocessable_content
         end
       end
 
@@ -42,7 +42,7 @@ module Api
       end
 
       def wordbook_params
-        params.require(:wordbook).permit(:title)
+        params.expect(wordbook: [:title])
       end
     end
   end
