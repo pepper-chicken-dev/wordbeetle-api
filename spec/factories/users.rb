@@ -1,12 +1,12 @@
 FactoryBot.define do
   factory :user do
     sequence(:provider_uid) { |n| "uid_#{n}" }
-    provider { "google" }
+    provider { 'google' }
     sequence(:email) { |n| "user#{n}@example.com" }
-    name { "Test User" }
+    name { 'Test User' }
 
     trait :guest do
-      provider { "guest" }
+      provider { 'guest' }
       provider_uid { nil }
       email { nil }
       name { nil }

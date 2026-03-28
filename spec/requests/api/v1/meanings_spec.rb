@@ -1,12 +1,12 @@
-require "rails_helper"
+require 'rails_helper'
 
-RSpec.describe "Api::V1::Meanings", type: :request do
+RSpec.describe 'Api::V1::Meanings', type: :request do
   let(:user) { create(:user) }
   let(:headers) { auth_headers_for(user) }
   let(:wordbook) { create(:wordbook, user: user) }
   let(:word) { create(:word, wordbook: wordbook) }
 
-  describe "GET /api/v1/wordbooks/:wordbook_id/words/:word_id/meanings" do
+  describe 'GET /api/v1/wordbooks/:wordbook_id/words/:word_id/meanings' do
     it "returns current user's meanings" do
       create_list(:meaning, 2, word: word)
       create(:meaning) # another user's meaning
@@ -17,7 +17,7 @@ RSpec.describe "Api::V1::Meanings", type: :request do
       expect(response.parsed_body.size).to eq(2)
     end
 
-    it "returns 401 without authentication" do
+    it 'returns 401 without authentication' do
       get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}/meanings"
 
       expect(response).to have_http_status(:unauthorized)
@@ -33,14 +33,14 @@ RSpec.describe "Api::V1::Meanings", type: :request do
     end
   end
 
-  describe "GET /api/v1/wordbooks/:wordbook_id/words/:word_id/meanings/:id" do
-    it "returns the meaning" do
-      meaning = create(:meaning, word: word, content: "挨拶")
+  describe 'GET /api/v1/wordbooks/:wordbook_id/words/:word_id/meanings/:id' do
+    it 'returns the meaning' do
+      meaning = create(:meaning, word: word, content: '挨拶')
 
       get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}/meanings/#{meaning.id}", headers: headers
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body["content"]).to eq("挨拶")
+      expect(response.parsed_body['content']).to eq('挨拶')
     end
 
     it "returns not_found for another user's meaning" do
@@ -54,43 +54,47 @@ RSpec.describe "Api::V1::Meanings", type: :request do
     end
   end
 
-  describe "POST /api/v1/wordbooks/:wordbook_id/words/:word_id/meanings" do
-    context "with valid params" do
-      it "creates a meaning" do
-        expect {
-          post "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}/meanings", params: { meaning: { content: "意味", display_order: 1 } }, headers: headers
-        }.to change(Meaning, :count).by(1)
+  describe 'POST /api/v1/wordbooks/:wordbook_id/words/:word_id/meanings' do
+    context 'with valid params' do
+      it 'creates a meaning' do
+        expect do
+          post "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}/meanings",
+               params: { meaning: { content: '意味', display_order: 1 } }, headers: headers
+        end.to change(Meaning, :count).by(1)
 
         expect(response).to have_http_status(:created)
       end
     end
 
-    context "with invalid params" do
-      it "returns unprocessable_entity" do
-        post "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}/meanings", params: { meaning: { content: "", display_order: 1 } }, headers: headers
+    context 'with invalid params' do
+      it 'returns unprocessable_entity' do
+        post "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}/meanings",
+             params: { meaning: { content: '', display_order: 1 } }, headers: headers
 
         expect(response).to have_http_status(:unprocessable_entity)
       end
     end
 
-    it "returns not_found when word belongs to another user" do
+    it 'returns not_found when word belongs to another user' do
       other_wordbook = create(:wordbook)
       other_word = create(:word, wordbook: other_wordbook)
 
-      post "/api/v1/wordbooks/#{other_wordbook.id}/words/#{other_word.id}/meanings", params: { meaning: { content: "test", display_order: 1 } }, headers: headers
+      post "/api/v1/wordbooks/#{other_wordbook.id}/words/#{other_word.id}/meanings",
+           params: { meaning: { content: 'test', display_order: 1 } }, headers: headers
 
       expect(response).to have_http_status(:not_found)
     end
   end
 
-  describe "PATCH /api/v1/wordbooks/:wordbook_id/words/:word_id/meanings/:id" do
+  describe 'PATCH /api/v1/wordbooks/:wordbook_id/words/:word_id/meanings/:id' do
     let(:meaning) { create(:meaning, word: word) }
 
-    it "updates the meaning" do
-      patch "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}/meanings/#{meaning.id}", params: { meaning: { content: "更新された意味" } }, headers: headers
+    it 'updates the meaning' do
+      patch "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}/meanings/#{meaning.id}",
+            params: { meaning: { content: '更新された意味' } }, headers: headers
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body["content"]).to eq("更新された意味")
+      expect(response.parsed_body['content']).to eq('更新された意味')
     end
 
     it "returns not_found for another user's meaning" do
@@ -98,19 +102,20 @@ RSpec.describe "Api::V1::Meanings", type: :request do
       other_word = create(:word, wordbook: other_wordbook)
       other_meaning = create(:meaning, word: other_word)
 
-      patch "/api/v1/wordbooks/#{other_wordbook.id}/words/#{other_word.id}/meanings/#{other_meaning.id}", params: { meaning: { content: "hacked" } }, headers: headers
+      patch "/api/v1/wordbooks/#{other_wordbook.id}/words/#{other_word.id}/meanings/#{other_meaning.id}",
+            params: { meaning: { content: 'hacked' } }, headers: headers
 
       expect(response).to have_http_status(:not_found)
     end
   end
 
-  describe "DELETE /api/v1/wordbooks/:wordbook_id/words/:word_id/meanings/:id" do
-    it "deletes the meaning" do
+  describe 'DELETE /api/v1/wordbooks/:wordbook_id/words/:word_id/meanings/:id' do
+    it 'deletes the meaning' do
       meaning = create(:meaning, word: word)
 
-      expect {
+      expect do
         delete "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}/meanings/#{meaning.id}", headers: headers
-      }.to change(Meaning, :count).by(-1)
+      end.to change(Meaning, :count).by(-1)
 
       expect(response).to have_http_status(:no_content)
     end
@@ -120,7 +125,8 @@ RSpec.describe "Api::V1::Meanings", type: :request do
       other_word = create(:word, wordbook: other_wordbook)
       other_meaning = create(:meaning, word: other_word)
 
-      delete "/api/v1/wordbooks/#{other_wordbook.id}/words/#{other_word.id}/meanings/#{other_meaning.id}", headers: headers
+      delete "/api/v1/wordbooks/#{other_wordbook.id}/words/#{other_word.id}/meanings/#{other_meaning.id}",
+             headers: headers
 
       expect(response).to have_http_status(:not_found)
     end
