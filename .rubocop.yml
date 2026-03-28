@@ -1,8 +1,53 @@
-# Omakase Ruby styling for Rails
-inherit_gem: { rubocop-rails-omakase: rubocop.yml }
+plugins:
+  - rubocop-performance
+  - rubocop-rails
+  - rubocop-rspec
 
-# Overwrite or add rules to create your own house style
-#
-# # Use `[a, [b, c]]` not `[ a, [ b, c ] ]`
-# Layout/SpaceInsideArrayLiteralBrackets:
-#   Enabled: false
+AllCops:
+  NewCops: enable
+  SuggestExtensions: false
+  TargetRubyVersion: 3.3
+  Exclude:
+    - "bin/**/*"
+    - "db/schema.rb"
+    - "vendor/**/*"
+    - "node_modules/**/*"
+
+# Metrics - disabled to avoid noisy false positives
+Metrics:
+  Enabled: false
+
+# Naming - disabled to avoid noisy false positives
+Naming:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+# RSpec cops - relax strict defaults
+RSpec/MultipleExpectations:
+  Max: 10
+
+RSpec/ExampleLength:
+  Max: 15
+
+RSpec/MultipleMemoizedHelpers:
+  Max: 10
+
+RSpec/NestedGroups:
+  Max: 5
+
+RSpec/LetSetup:
+  Enabled: false
+
+# Migrations - exclude from bulk change and squished SQL checks
+Rails/BulkChangeTable:
+  Exclude:
+    - "db/migrate/**/*"
+
+Rails/SquishedSQLHeredocs:
+  Exclude:
+    - "db/migrate/**/*"
