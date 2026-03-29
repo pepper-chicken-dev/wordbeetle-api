@@ -11,8 +11,9 @@ class Setting < ApplicationRecord
       value = send(attr)
       next if value.blank?
 
-      unless value.is_a?(ActiveSupport::Duration) && value.to_i > 0
-        errors.add(attr, "must be a positive interval")
+      unless value.is_a?(ActiveSupport::Duration) && value.to_i.positive?
+        errors.add(attr,
+                   'must be a positive interval')
       end
     end
   end

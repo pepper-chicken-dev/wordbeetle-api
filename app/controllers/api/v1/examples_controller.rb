@@ -2,7 +2,7 @@ module Api
   module V1
     class ExamplesController < ApplicationController
       before_action :set_word
-      before_action :set_example, only: [ :show, :update, :destroy ]
+      before_action :set_example, only: %i[show update destroy]
 
       def index
         examples = @word.examples
@@ -19,7 +19,7 @@ module Api
         if example.save
           render json: example, status: :created
         else
-          render json: { errors: example.errors.full_messages }, status: :unprocessable_entity
+          render json: { errors: example.errors.full_messages }, status: :unprocessable_content
         end
       end
 
@@ -27,7 +27,7 @@ module Api
         if @example.update(example_params)
           render json: @example
         else
-          render json: { errors: @example.errors.full_messages }, status: :unprocessable_entity
+          render json: { errors: @example.errors.full_messages }, status: :unprocessable_content
         end
       end
 
@@ -47,7 +47,7 @@ module Api
       end
 
       def example_params
-        params.require(:example).permit(:sentence, :translation, :display_order)
+        params.expect(example: %i[sentence translation display_order])
       end
     end
   end

@@ -5,7 +5,7 @@ class ChangeIntervalsToIntervalType < ActiveRecord::Migration[8.1]
     add_column :settings, :uncertain_interval, :interval
     add_column :settings, :easy_interval, :interval
 
-    execute <<~SQL
+    execute <<~SQL.squish
       UPDATE settings
       SET hard_interval = make_interval(days => hard_interval_days),
           uncertain_interval = make_interval(days => uncertain_interval_days),
@@ -34,7 +34,7 @@ class ChangeIntervalsToIntervalType < ActiveRecord::Migration[8.1]
     add_column :settings, :uncertain_interval_days, :integer
     add_column :settings, :easy_interval_days, :integer
 
-    execute <<~SQL
+    execute <<~SQL.squish
       UPDATE settings
       SET hard_interval_days = EXTRACT(EPOCH FROM hard_interval) / 86400,
           uncertain_interval_days = EXTRACT(EPOCH FROM uncertain_interval) / 86400,

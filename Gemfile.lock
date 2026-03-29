@@ -325,10 +325,9 @@ GEM
       rack (>= 1.1)
       rubocop (>= 1.75.0, < 2.0)
       rubocop-ast (>= 1.44.0, < 2.0)
-    rubocop-rails-omakase (1.1.0)
-      rubocop (>= 1.72)
-      rubocop-performance (>= 1.24)
-      rubocop-rails (>= 2.30)
+    rubocop-rspec (3.9.0)
+      lint_roller (~> 1.1)
+      rubocop (~> 1.81)
     ruby-progressbar (1.13.0)
     securerandom (0.4.1)
     shoulda-matchers (7.0.1)
@@ -405,7 +404,10 @@ DEPENDENCIES
   puma (>= 5.0)
   rails (~> 8.1.0)
   rspec-rails
-  rubocop-rails-omakase
+  rubocop
+  rubocop-performance
+  rubocop-rails
+  rubocop-rspec
   shoulda-matchers
   solid_cache
   solid_queue

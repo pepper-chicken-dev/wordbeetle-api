@@ -4,7 +4,7 @@ module GoogleAuthenticatable
   private
 
   def verify_google_token(token)
-    client_id = ENV["GOOGLE_CLIENT_ID"]
+    client_id = ENV.fetch('GOOGLE_CLIENT_ID', nil)
 
     begin
       Google::Auth::IDTokens.verify_oidc(token, aud: client_id)

@@ -4,7 +4,7 @@ class MakeProviderUidNullableForGuests < ActiveRecord::Migration[8.1]
 
     reversible do |dir|
       dir.up do
-        execute <<~SQL
+        execute <<~SQL.squish
           ALTER TABLE users
             ADD CONSTRAINT chk_provider_uid_required_for_non_guest
             CHECK (provider = 'guest' OR provider_uid IS NOT NULL)
@@ -12,7 +12,7 @@ class MakeProviderUidNullableForGuests < ActiveRecord::Migration[8.1]
       end
 
       dir.down do
-        execute <<~SQL
+        execute <<~SQL.squish
           ALTER TABLE users
             DROP CONSTRAINT chk_provider_uid_required_for_non_guest
         SQL

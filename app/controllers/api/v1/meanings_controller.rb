@@ -2,7 +2,7 @@ module Api
   module V1
     class MeaningsController < ApplicationController
       before_action :set_word
-      before_action :set_meaning, only: [ :show, :update, :destroy ]
+      before_action :set_meaning, only: %i[show update destroy]
 
       def index
         meanings = @word.meanings
@@ -19,7 +19,7 @@ module Api
         if meaning.save
           render json: meaning, status: :created
         else
-          render json: { errors: meaning.errors.full_messages }, status: :unprocessable_entity
+          render json: { errors: meaning.errors.full_messages }, status: :unprocessable_content
         end
       end
 
@@ -27,7 +27,7 @@ module Api
         if @meaning.update(meaning_params)
           render json: @meaning
         else
-          render json: { errors: @meaning.errors.full_messages }, status: :unprocessable_entity
+          render json: { errors: @meaning.errors.full_messages }, status: :unprocessable_content
         end
       end
 
@@ -47,7 +47,7 @@ module Api
       end
 
       def meaning_params
-        params.require(:meaning).permit(:content, :display_order)
+        params.expect(meaning: %i[content display_order])
       end
     end
   end

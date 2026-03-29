@@ -2,7 +2,7 @@ module Api
   module V1
     class WordsController < ApplicationController
       before_action :set_wordbook
-      before_action :set_word, only: [ :show, :update, :destroy ]
+      before_action :set_word, only: %i[show update destroy]
 
       def index
         words = @wordbook.words.includes(:first_meaning)
@@ -13,9 +13,7 @@ module Api
 
       def show
         includes = parse_includes
-        if includes.any?
-          @word = @wordbook.words.includes(*includes.map(&:to_sym)).find(params[:id])
-        end
+        @word = @wordbook.words.includes(*includes.map(&:to_sym)).find(params[:id]) if includes.any?
         render json: word_json(@word, includes: includes)
       end
 
@@ -25,7 +23,7 @@ module Api
         if word.save
           render json: word, status: :created
         else
-          render json: { errors: word.errors.full_messages }, status: :unprocessable_entity
+          render json: { errors: word.errors.full_messages }, status: :unprocessable_content
         end
       end
 
@@ -33,7 +31,7 @@ module Api
         if @word.update(word_params)
           render json: @word
         else
-          render json: { errors: @word.errors.full_messages }, status: :unprocessable_entity
+          render json: { errors: @word.errors.full_messages }, status: :unprocessable_content
         end
       end
 
@@ -41,6 +39,8 @@ module Api
         @word.destroy
         head :no_content
       end
+
+      ALLOWED_INCLUDES = %w[meanings examples].freeze
 
       private
 
@@ -52,11 +52,10 @@ module Api
         @word = @wordbook.words.find(params[:id])
       end
 
-      ALLOWED_INCLUDES = %w[meanings examples].freeze
-
       def parse_includes
         return [] if params[:include].blank?
-        params[:include].split(",").map(&:strip).select { |i| ALLOWED_INCLUDES.include?(i) }
+
+        params[:include].split(',').map(&:strip).select { |i| ALLOWED_INCLUDES.include?(i) }
       end
 
       def word_json(word, includes: [])
@@ -68,7 +67,7 @@ module Api
       end
 
       def word_params
-        params.require(:word).permit(:spelling, :status, :next_review_at)
+        params.expect(word: %i[spelling status next_review_at])
       end
     end
   end
