@@ -79,6 +79,20 @@ RSpec.describe 'Api::V1::Auth', type: :request do
       end
     end
 
+    context 'when an unexpected error occurs during token verification' do
+      before do
+        allow(Google::Auth::IDTokens).to receive(:verify_oidc).and_raise(
+          RuntimeError.new('Unexpected network error')
+        )
+      end
+
+      it 'raises the error instead of returning unauthorized' do
+        expect do
+          post '/api/v1/auth/google', headers: { 'Authorization' => 'Bearer valid_token' }
+        end.to raise_error(RuntimeError, 'Unexpected network error')
+      end
+    end
+
     context 'when token is valid and user is new' do
       before do
         allow(Google::Auth::IDTokens).to receive(:verify_oidc).and_return(google_payload)

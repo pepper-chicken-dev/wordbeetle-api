@@ -11,9 +11,6 @@ module GoogleAuthenticatable
     rescue Google::Auth::IDTokens::VerificationError => e
       Rails.logger.error("Google ID token verification failed: #{e.message}")
       nil
-    rescue StandardError => e
-      Rails.logger.error("Unexpected error: #{e.message}")
-      nil
     end
   end
 end
