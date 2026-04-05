@@ -4,7 +4,7 @@ module GuestMigratable
   private
 
   def find_guest_user_from_token(token)
-    payload = decode_jwt(token)
+    payload = JsonWebToken.decode(token)
     return nil unless payload
 
     User.find_by(id: payload['sub'], provider: 'guest')

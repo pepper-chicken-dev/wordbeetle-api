@@ -1,8 +1,6 @@
 module Authenticatable
   extend ActiveSupport::Concern
 
-  include JwtAuthenticatable
-
   included do
     before_action :authenticate_user!
   end
@@ -13,7 +11,7 @@ module Authenticatable
     token = request.headers['Authorization']&.split('Bearer ')&.last
     return render_unauthorized unless token
 
-    payload = decode_jwt(token)
+    payload = JsonWebToken.decode(token)
     return render_unauthorized unless payload
 
     @current_user = User.find_by(id: payload['sub'])
