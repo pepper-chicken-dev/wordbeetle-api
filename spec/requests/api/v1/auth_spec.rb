@@ -29,8 +29,8 @@ RSpec.describe 'Api::V1::Auth', type: :request do
       token = body['token']
       user = User.last
 
-      decoded = JWT.decode(token, Rails.application.secret_key_base, true, algorithm: 'HS256')
-      expect(decoded.first['sub']).to eq(user.id)
+      decoded = JsonWebToken.decode(token)
+      expect(decoded['sub']).to eq(user.id)
     end
 
     it 'returns a JWT token that expires at guest_expires_at' do
@@ -40,8 +40,8 @@ RSpec.describe 'Api::V1::Auth', type: :request do
       token = body['token']
       user = User.last
 
-      decoded = JWT.decode(token, Rails.application.secret_key_base, true, algorithm: 'HS256')
-      expect(decoded.first['exp']).to eq(user.guest_expires_at.to_i)
+      decoded = JsonWebToken.decode(token)
+      expect(decoded['exp']).to eq(user.guest_expires_at.to_i)
     end
   end
 
@@ -113,8 +113,8 @@ RSpec.describe 'Api::V1::Auth', type: :request do
         expect(user_json.keys).to match_array(%w[email name avatar_url])
 
         expect(body['token']).to be_present
-        decoded = JWT.decode(body['token'], Rails.application.secret_key_base, true, algorithm: 'HS256')
-        expect(decoded.first['sub']).to eq(User.last.id)
+        decoded = JsonWebToken.decode(body['token'])
+        expect(decoded['sub']).to eq(User.last.id)
       end
     end
 
@@ -151,11 +151,7 @@ RSpec.describe 'Api::V1::Auth', type: :request do
     context 'with guest_token (guest migration)' do
       let(:guest_user) { create(:user, :guest) }
       let(:guest_token) do
-        JWT.encode(
-          { sub: guest_user.id, exp: guest_user.guest_expires_at.to_i, iat: Time.current.to_i },
-          Rails.application.secret_key_base,
-          'HS256'
-        )
+        JsonWebToken.encode(guest_user.id, expires_at: guest_user.guest_expires_at)
       end
 
       before do
@@ -217,8 +213,8 @@ RSpec.describe 'Api::V1::Auth', type: :request do
                headers: { 'Authorization' => 'Bearer valid_token' }
 
           token = response.parsed_body['token']
-          decoded = JWT.decode(token, Rails.application.secret_key_base, true, algorithm: 'HS256')
-          expect(decoded.first['sub']).to eq(guest_user.id)
+          decoded = JsonWebToken.decode(token)
+          expect(decoded['sub']).to eq(guest_user.id)
         end
       end
 
@@ -277,8 +273,8 @@ RSpec.describe 'Api::V1::Auth', type: :request do
                headers: { 'Authorization' => 'Bearer valid_token' }
 
           token = response.parsed_body['token']
-          decoded = JWT.decode(token, Rails.application.secret_key_base, true, algorithm: 'HS256')
-          expect(decoded.first['sub']).to eq(google_user.id)
+          decoded = JsonWebToken.decode(token)
+          expect(decoded['sub']).to eq(google_user.id)
         end
       end
 
@@ -296,11 +292,7 @@ RSpec.describe 'Api::V1::Auth', type: :request do
       context 'when guest_token belongs to a Google user' do
         let(:google_user) { create(:user, provider: 'google', provider_uid: 'other_uid') }
         let(:non_guest_token) do
-          JWT.encode(
-            { sub: google_user.id, exp: 30.days.from_now.to_i, iat: Time.current.to_i },
-            Rails.application.secret_key_base,
-            'HS256'
-          )
+          JsonWebToken.encode(google_user.id)
         end
 
         it 'returns unauthorized' do
