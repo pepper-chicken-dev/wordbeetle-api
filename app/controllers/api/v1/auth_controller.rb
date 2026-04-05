@@ -8,7 +8,7 @@ module Api
 
       def guest
         user = User.create!(provider: 'guest', guest_expires_at: 7.days.from_now)
-        token = encode_jwt(user.id, expires_at: user.guest_expires_at)
+        token = JsonWebToken.encode(user.id, expires_at: user.guest_expires_at)
 
         render json: { user: user.as_json(only: [:guest_expires_at]), token: token }, status: :created
       end
@@ -39,7 +39,7 @@ module Api
           u.avatar_url = payload['picture']
         end
 
-        render json: { user: user.as_json(only: %i[email name avatar_url]), token: encode_jwt(user.id) },
+        render json: { user: user.as_json(only: %i[email name avatar_url]), token: JsonWebToken.encode(user.id) },
                status: :ok
       end
 
@@ -54,7 +54,7 @@ module Api
 
         if result[:success]
           user_json = result[:user].as_json(only: %i[email name avatar_url])
-          render json: { user: user_json, token: encode_jwt(result[:user].id) },
+          render json: { user: user_json, token: JsonWebToken.encode(result[:user].id) },
                  status: :ok
         else
           render json: { error: result[:error] }, status: :unprocessable_content

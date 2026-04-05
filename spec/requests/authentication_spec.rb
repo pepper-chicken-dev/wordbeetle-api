@@ -25,11 +25,7 @@ RSpec.describe 'Authentication', type: :request do
 
     context 'with expired token' do
       it 'returns 401' do
-        token = JWT.encode(
-          { sub: user.id, exp: 1.day.ago.to_i, iat: 2.days.ago.to_i },
-          Rails.application.secret_key_base,
-          'HS256'
-        )
+        token = JsonWebToken.encode(user.id, expires_at: 1.day.ago)
 
         get '/api/v1/wordbooks', headers: { 'Authorization' => "Bearer #{token}" }
 
@@ -39,11 +35,7 @@ RSpec.describe 'Authentication', type: :request do
 
     context 'with token for nonexistent user' do
       it 'returns 401' do
-        token = JWT.encode(
-          { sub: 999_999, exp: 30.days.from_now.to_i, iat: Time.current.to_i },
-          Rails.application.secret_key_base,
-          'HS256'
-        )
+        token = JsonWebToken.encode(999_999)
 
         get '/api/v1/wordbooks', headers: { 'Authorization' => "Bearer #{token}" }
 
