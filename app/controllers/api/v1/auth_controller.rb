@@ -1,10 +1,13 @@
 module Api
   module V1
     class AuthController < ApplicationController
-      include GoogleAuthenticatable
       include GuestMigratable
 
       skip_before_action :authenticate_user!
+
+      rescue_from GoogleIdToken::VerificationError do
+        render json: { error: 'Invalid ID token' }, status: :unauthorized
+      end
 
       def guest
         user = User.create!(provider: 'guest', guest_expires_at: 7.days.from_now)
@@ -18,9 +21,7 @@ module Api
 
         return render json: { error: 'Authorization header missing' }, status: :bad_request if id_token.blank?
 
-        payload = verify_google_token(id_token)
-
-        return render json: { error: 'Invalid ID token' }, status: :unauthorized unless payload
+        payload = GoogleIdToken.decode(id_token)
 
         return handle_guest_migration(payload) if params[:guest_token].present?
 
