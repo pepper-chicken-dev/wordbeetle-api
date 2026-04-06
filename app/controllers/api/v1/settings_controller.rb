@@ -77,12 +77,7 @@ module Api
       def duration_to_hash(duration)
         return nil if duration.blank?
 
-        total_seconds = duration.to_i
-        days = total_seconds / 86_400
-        hours = (total_seconds % 86_400) / 3600
-        minutes = (total_seconds % 3600) / 60
-
-        { days: days, hours: hours, minutes: minutes }
+        { days: 0, hours: 0, minutes: 0 }.merge(duration.parts.slice(:days, :hours, :minutes))
       end
     end
   end
