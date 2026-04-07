@@ -1,8 +1,6 @@
 module Api
   module V1
     class AuthController < ApplicationController
-      include GuestMigratable
-
       skip_before_action :authenticate_user!
 
       rescue_from GoogleIdToken::VerificationError do
@@ -47,18 +45,18 @@ module Api
       private
 
       def handle_guest_migration(google_payload)
-        guest_user = find_guest_user_from_token(params[:guest_token])
+        guest_user = User.find_guest_from_token(params[:guest_token])
 
         return render json: { error: 'Invalid guest token' }, status: :unauthorized unless guest_user
 
-        result = migrate_guest_to_google(guest_user, google_payload)
+        result = guest_user.migrate_to_google(google_payload)
 
-        if result[:success]
-          user_json = result[:user].as_json(only: %i[email name avatar_url])
-          render json: { user: user_json, token: JsonWebToken.encode(result[:user].id) },
+        if result.success?
+          user_json = result.user.as_json(only: %i[email name avatar_url])
+          render json: { user: user_json, token: JsonWebToken.encode(result.user.id) },
                  status: :ok
         else
-          render json: { error: result[:error] }, status: :unprocessable_content
+          render json: { error: result.error }, status: :unprocessable_content
         end
       end
     end
