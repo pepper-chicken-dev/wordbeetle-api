@@ -8,4 +8,8 @@ class User < ApplicationRecord
   validates :guest_expires_at, presence: true, if: -> { provider == 'guest' }
 
   enum :provider, { google: 'google', guest: 'guest' }
+
+  def effective_setting
+    setting || Setting.default
+  end
 end
