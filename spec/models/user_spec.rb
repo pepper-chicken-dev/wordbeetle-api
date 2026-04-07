@@ -67,4 +67,22 @@ RSpec.describe User, type: :model do
       expect(build(:user, :guest)).to be_valid
     end
   end
+
+  describe '#effective_setting' do
+    let(:user) { create(:user) }
+
+    context 'when user has a setting record' do
+      let!(:setting) { create(:setting, user: user) }
+
+      it 'returns the user setting' do
+        expect(user.effective_setting).to eq(setting)
+      end
+    end
+
+    context 'when user has no setting record' do
+      it 'returns the default setting' do
+        expect(user.effective_setting).to eq(Setting.default)
+      end
+    end
+  end
 end

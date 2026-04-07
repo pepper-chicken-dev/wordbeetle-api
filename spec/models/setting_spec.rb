@@ -31,4 +31,24 @@ RSpec.describe Setting, type: :model do
       expect(build(:setting)).to be_valid
     end
   end
+
+  describe '.default' do
+    subject(:default_setting) { described_class.default }
+
+    it 'returns a DefaultSetting with hard_interval of 1 day' do
+      expect(default_setting.hard_interval).to eq(1.day)
+    end
+
+    it 'returns a DefaultSetting with uncertain_interval of 3 days' do
+      expect(default_setting.uncertain_interval).to eq(3.days)
+    end
+
+    it 'returns a DefaultSetting with easy_interval of 7 days' do
+      expect(default_setting.easy_interval).to eq(7.days)
+    end
+
+    it 'returns an empty hash for as_json' do
+      expect(default_setting.as_json).to eq({})
+    end
+  end
 end

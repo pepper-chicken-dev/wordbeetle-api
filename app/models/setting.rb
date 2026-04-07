@@ -1,4 +1,14 @@
 class Setting < ApplicationRecord
+  DefaultSetting = Struct.new(:hard_interval, :uncertain_interval, :easy_interval) do
+    def as_json(*)
+      {}
+    end
+  end
+
+  def self.default
+    DefaultSetting.new(1.day, 3.days, 7.days)
+  end
+
   belongs_to :user
 
   validates :hard_interval, :uncertain_interval, :easy_interval, presence: true

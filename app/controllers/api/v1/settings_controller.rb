@@ -1,10 +1,10 @@
 module Api
   module V1
     class SettingsController < ApplicationController
-      before_action :set_setting, only: %i[show update destroy]
+      before_action :set_setting, only: %i[update destroy]
 
       def show
-        render json: setting_response(@setting)
+        render json: setting_response(current_user.effective_setting)
       end
 
       def create
