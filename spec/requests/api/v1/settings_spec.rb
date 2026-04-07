@@ -17,10 +17,14 @@ RSpec.describe 'Api::V1::Settings', type: :request do
       expect(body['easy_interval']).to eq({ 'days' => 7, 'hours' => 0, 'minutes' => 0 })
     end
 
-    it 'returns not_found when user has no setting' do
+    it 'returns default values when user has no setting' do
       get '/api/v1/setting', headers: headers
 
-      expect(response).to have_http_status(:not_found)
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body['hard_interval']).to eq({ 'days' => 1, 'hours' => 0, 'minutes' => 0 })
+      expect(body['uncertain_interval']).to eq({ 'days' => 3, 'hours' => 0, 'minutes' => 0 })
+      expect(body['easy_interval']).to eq({ 'days' => 7, 'hours' => 0, 'minutes' => 0 })
     end
 
     it 'returns 401 without authentication' do
