@@ -33,7 +33,7 @@ RSpec.describe Setting, type: :model do
   end
 
   describe '.default' do
-    subject(:default_setting) { Setting.default }
+    subject(:default_setting) { described_class.default }
 
     it 'returns a DefaultSetting with hard_interval of 1 day' do
       expect(default_setting.hard_interval).to eq(1.day)
