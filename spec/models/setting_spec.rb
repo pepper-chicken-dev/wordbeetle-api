@@ -35,20 +35,24 @@ RSpec.describe Setting, type: :model do
   describe '.default' do
     subject(:default_setting) { described_class.default }
 
-    it 'returns a DefaultSetting with hard_interval of 1 day' do
+    it 'returns a Setting with hard_interval of 1 day' do
       expect(default_setting.hard_interval).to eq(1.day)
     end
 
-    it 'returns a DefaultSetting with uncertain_interval of 3 days' do
+    it 'returns a Setting with uncertain_interval of 3 days' do
       expect(default_setting.uncertain_interval).to eq(3.days)
     end
 
-    it 'returns a DefaultSetting with easy_interval of 7 days' do
+    it 'returns a Setting with easy_interval of 7 days' do
       expect(default_setting.easy_interval).to eq(7.days)
     end
 
-    it 'returns an empty hash for as_json' do
-      expect(default_setting.as_json).to eq({})
+    it 'is not persisted' do
+      expect(default_setting).not_to be_persisted
+    end
+
+    it 'is frozen' do
+      expect(default_setting).to be_frozen
     end
   end
 end
