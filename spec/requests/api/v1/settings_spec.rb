@@ -25,6 +25,7 @@ RSpec.describe 'Api::V1::Settings', type: :request do
       expect(body['hard_interval']).to eq({ 'days' => 1, 'hours' => 0, 'minutes' => 0 })
       expect(body['uncertain_interval']).to eq({ 'days' => 3, 'hours' => 0, 'minutes' => 0 })
       expect(body['easy_interval']).to eq({ 'days' => 7, 'hours' => 0, 'minutes' => 0 })
+      expect(body).not_to have_key('id')
     end
 
     it 'returns 401 without authentication' do

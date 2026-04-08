@@ -1,12 +1,10 @@
 class Setting < ApplicationRecord
-  DefaultSetting = Struct.new(:hard_interval, :uncertain_interval, :easy_interval) do
-    def as_json(*)
-      {}
-    end
-  end
-
   def self.default
-    DefaultSetting.new(1.day, 3.days, 7.days)
+    Setting.new(
+      hard_interval: 1.day,
+      uncertain_interval: 3.days,
+      easy_interval: 7.days
+    ).freeze
   end
 
   belongs_to :user
