@@ -2,15 +2,15 @@ require 'rails_helper'
 
 RSpec.describe CleanupExpiredGuestsJob, type: :job do
   describe '#perform' do
-    context 'when 期限切れゲストユーザが存在する場合' do
-      it '期限切れゲストユーザを削除する' do
+    context 'when expired guest users exist' do
+      it 'deletes expired guest users' do
         expired_guest = create(:user, :guest, guest_expires_at: 1.day.ago)
 
         expect { described_class.perform_now }.to change(User, :count).by(-1)
         expect(User.exists?(expired_guest.id)).to be false
       end
 
-      it '削除件数をログに出力する' do
+      it 'logs the number of deleted users' do
         create(:user, :guest, guest_expires_at: 1.day.ago)
         create(:user, :guest, guest_expires_at: 2.days.ago)
 
@@ -20,8 +20,8 @@ RSpec.describe CleanupExpiredGuestsJob, type: :job do
       end
     end
 
-    context 'when 期限内のゲストユーザが存在する場合' do
-      it '期限内のゲストユーザを削除しない' do
+    context 'when active guest users exist' do
+      it 'does not delete active guest users' do
         active_guest = create(:user, :guest, guest_expires_at: 1.day.from_now)
 
         expect { described_class.perform_now }.not_to change(User, :count)
@@ -29,8 +29,8 @@ RSpec.describe CleanupExpiredGuestsJob, type: :job do
       end
     end
 
-    context 'when Googleユーザが存在する場合' do
-      it 'Googleユーザを削除しない' do
+    context 'when Google users exist' do
+      it 'does not delete Google users' do
         google_user = create(:user)
 
         expect { described_class.perform_now }.not_to change(User, :count)
@@ -38,8 +38,8 @@ RSpec.describe CleanupExpiredGuestsJob, type: :job do
       end
     end
 
-    context 'when 期限切れゲストユーザに関連データが存在する場合' do
-      it '関連データ（Wordbook→Word→Meaning/Example、Setting）をカスケード削除する' do
+    context 'when expired guest users have associated data' do
+      it 'cascade-deletes associated data (Wordbook, Word, Meaning, Example, Setting)' do
         expired_guest = create(:user, :guest, guest_expires_at: 1.day.ago)
         wordbook = create(:wordbook, user: expired_guest)
         word = create(:word, wordbook: wordbook)
