@@ -906,14 +906,9 @@ components:
       properties:
         id:
           type: integer
-        user_id:
-          type: integer
         title:
           type: string
         created_at:
-          type: string
-          format: date-time
-        updated_at:
           type: string
           format: date-time
 
@@ -921,8 +916,6 @@ components:
       type: object
       properties:
         id:
-          type: integer
-        wordbook_id:
           type: integer
         spelling:
           type: string
@@ -932,12 +925,6 @@ components:
           type: string
           format: date-time
           nullable: true
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
 
     WordWithFirstMeaning:
       allOf:
@@ -947,8 +934,10 @@ components:
             first_meaning:
               nullable: true
               description: The meaning with the lowest display_order, or null if no meanings exist
-              allOf:
-                - $ref: "#/components/schemas/Meaning"
+              type: object
+              properties:
+                content:
+                  type: string
 
     WordWithRelations:
       allOf:
