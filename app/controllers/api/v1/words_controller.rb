@@ -7,7 +7,7 @@ module Api
       def index
         words = @wordbook.words.includes(:first_meaning)
         render json: words.map { |word|
-          word.as_json.merge(first_meaning: word.first_meaning&.as_json)
+          word.as_json(only: Word::API_FIELDS).merge(first_meaning: word.first_meaning&.as_json(only: [:content]))
         }
       end
 
@@ -21,7 +21,7 @@ module Api
         word = @wordbook.words.new(word_params)
 
         if word.save
-          render json: word, status: :created
+          render json: word.as_json(only: Word::API_FIELDS), status: :created
         else
           render json: { errors: word.errors.full_messages }, status: :unprocessable_content
         end
@@ -29,7 +29,7 @@ module Api
 
       def update
         if @word.update(word_params)
-          render json: @word
+          render json: @word.as_json(only: Word::API_FIELDS)
         else
           render json: { errors: @word.errors.full_messages }, status: :unprocessable_content
         end
@@ -59,7 +59,7 @@ module Api
       end
 
       def word_json(word, includes: [])
-        json = word.as_json
+        json = word.as_json(only: Word::API_FIELDS)
         includes.each do |assoc|
           json[assoc] = word.public_send(assoc).sort_by(&:display_order).as_json
         end
