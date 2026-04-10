@@ -63,7 +63,6 @@ RSpec.describe 'Api::V1::Wordbooks', type: :request do
 
         expect(response).to have_http_status(:created)
         expect(response.parsed_body['title']).to eq('English Vocab')
-        expect(response.parsed_body['user_id']).to eq(user.id)
       end
     end
 

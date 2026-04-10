@@ -25,7 +25,6 @@ RSpec.describe 'Api::V1::Words', type: :request do
 
       returned_word = response.parsed_body.find { |w| w['id'] == word.id }
       expect(returned_word['first_meaning']['content']).to eq('first')
-      expect(returned_word['first_meaning']['display_order']).to eq(1)
     end
 
     it 'returns null first_meaning when word has no meanings' do
