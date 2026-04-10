@@ -67,13 +67,11 @@ module Api
       end
 
       def setting_response(setting)
-        except_keys = %i[hard_interval uncertain_interval easy_interval]
-        except_keys += %i[id user_id created_at updated_at] unless setting.persisted?
-        setting.as_json(except: except_keys).merge(
+        {
           hard_interval: duration_to_hash(setting.hard_interval),
           uncertain_interval: duration_to_hash(setting.uncertain_interval),
           easy_interval: duration_to_hash(setting.easy_interval)
-        )
+        }
       end
 
       def duration_to_hash(duration)
