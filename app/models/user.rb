@@ -23,11 +23,11 @@ class User < ApplicationRecord
 
   enum :provider, { google: 'google', guest: 'guest' }
 
-  def self.find_guest_from_token(token)
+  def self.find_by_token(token)
     payload = JsonWebToken.decode(token)
     return nil unless payload
 
-    find_by(id: payload['sub'], provider: 'guest')
+    find_by(id: payload['sub'])
   end
 
   def migrate_to_google(google_payload)
