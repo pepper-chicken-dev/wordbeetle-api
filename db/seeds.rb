@@ -83,25 +83,25 @@ word3 = Word.create!(
 Rails.logger.debug 'Creating meanings...'
 Meaning.create!(
   word: word1,
-  content: 'りんご',
+  definition: 'りんご',
   display_order: 1
 )
 
 Meaning.create!(
   word: word2,
-  content: '本',
+  definition: '本',
   display_order: 1
 )
 
 Meaning.create!(
   word: word2,
-  content: '予約する',
+  definition: '予約する',
   display_order: 2
 )
 
 Meaning.create!(
   word: word3,
-  content: '交渉する',
+  definition: '交渉する',
   display_order: 1
 )
 

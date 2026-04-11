@@ -203,8 +203,8 @@ RSpec cop のデフォルト閾値は非常に厳しいため、実用的な範�
 #### Rails/Pluck
 
 - **内容**: 単一属性の抽出には `map` の代わりに `pluck` を使用する
-- **修正前**: `body['meanings'].map { |m| m['content'] }`
-- **修正後**: `body['meanings'].pluck('content')`
+- **修正前**: `body['meanings'].map { |m| m['definition'] }`
+- **修正後**: `body['meanings'].pluck('definition')`
 
 ### Lint 系
 

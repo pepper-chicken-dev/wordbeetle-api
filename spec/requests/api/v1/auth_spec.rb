@@ -161,7 +161,7 @@ RSpec.describe 'Api::V1::Auth', type: :request do
       context 'when Google account does not exist (in-place conversion)' do
         let!(:wordbook) { create(:wordbook, user: guest_user, title: 'Guest Wordbook') }
         let!(:word) { create(:word, wordbook: wordbook, spelling: 'apple') }
-        let!(:meaning) { create(:meaning, word: word, content: 'りんご') }
+        let!(:meaning) { create(:meaning, word: word, definition: 'りんご') }
         let!(:example) { create(:example, word: word, sentence: 'I like apples.', translation: 'りんごが好きです。') }
         let!(:setting) { create(:setting, user: guest_user) }
 
@@ -224,7 +224,7 @@ RSpec.describe 'Api::V1::Auth', type: :request do
         end
         let!(:guest_wordbook) { create(:wordbook, user: guest_user, title: 'Guest Wordbook') }
         let!(:guest_word) { create(:word, wordbook: guest_wordbook, spelling: 'banana') }
-        let!(:guest_meaning) { create(:meaning, word: guest_word, content: 'バナナ') }
+        let!(:guest_meaning) { create(:meaning, word: guest_word, definition: 'バナナ') }
         let!(:guest_setting) { create(:setting, user: guest_user) }
 
         it 'merges guest data into existing Google user and deletes guest' do

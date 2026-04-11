@@ -7,7 +7,7 @@ module Api
       def index
         words = @wordbook.words.includes(:first_meaning)
         render json: words.map { |word|
-          word.as_json(only: Word::API_FIELDS).merge(first_meaning: word.first_meaning&.as_json(only: [:content]))
+          word.as_json(only: Word::API_FIELDS).merge(first_meaning: word.first_meaning&.as_json(only: [:definition]))
         }
       end
 
