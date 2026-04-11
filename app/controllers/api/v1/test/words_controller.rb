@@ -7,13 +7,8 @@ module Api
           words = wordbook.words.reviewable.includes(:meanings, :examples)
 
           render json: {
-            wordbook: wordbook.as_json(only: %i[id title]),
-            words: words.map do |word|
-              word.as_json.merge(
-                meanings: word.meanings.sort_by(&:display_order).as_json,
-                examples: word.examples.sort_by(&:display_order).as_json
-              )
-            end
+            wordbook: WordbookResource.new(wordbook).serializable_hash,
+            words: WordResource.new(words, params: { includes: %w[meanings examples] }).serializable_hash
           }
         end
       end

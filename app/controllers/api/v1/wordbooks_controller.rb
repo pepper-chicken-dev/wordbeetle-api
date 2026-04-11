@@ -5,18 +5,18 @@ module Api
 
       def index
         wordbooks = current_user.wordbooks
-        render json: wordbooks.as_json(only: Wordbook::API_FIELDS)
+        render json: WordbookResource.new(wordbooks).serialize
       end
 
       def show
-        render json: @wordbook.as_json(only: Wordbook::API_FIELDS)
+        render json: WordbookResource.new(@wordbook).serialize
       end
 
       def create
         wordbook = current_user.wordbooks.new(wordbook_params)
 
         if wordbook.save
-          render json: wordbook.as_json(only: Wordbook::API_FIELDS), status: :created
+          render json: WordbookResource.new(wordbook).serialize, status: :created
         else
           render json: { errors: wordbook.errors.full_messages }, status: :unprocessable_content
         end
@@ -24,7 +24,7 @@ module Api
 
       def update
         if @wordbook.update(wordbook_params)
-          render json: @wordbook.as_json(only: Wordbook::API_FIELDS)
+          render json: WordbookResource.new(@wordbook).serialize
         else
           render json: { errors: @wordbook.errors.full_messages }, status: :unprocessable_content
         end

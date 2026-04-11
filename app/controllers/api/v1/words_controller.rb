@@ -6,22 +6,20 @@ module Api
 
       def index
         words = @wordbook.words.includes(:first_meaning)
-        render json: words.map { |word|
-          word.as_json(only: Word::API_FIELDS).merge(first_meaning: word.first_meaning&.as_json(only: [:definition]))
-        }
+        render json: WordResource.new(words, params: { include_first_meaning: true }).serialize
       end
 
       def show
         includes = parse_includes
         @word = @wordbook.words.includes(*includes.map(&:to_sym)).find(params[:id]) if includes.any?
-        render json: word_json(@word, includes: includes)
+        render json: WordResource.new(@word, params: { includes: includes }).serialize
       end
 
       def create
         word = @wordbook.words.new(word_params)
 
         if word.save
-          render json: word.as_json(only: Word::API_FIELDS), status: :created
+          render json: WordResource.new(word).serialize, status: :created
         else
           render json: { errors: word.errors.full_messages }, status: :unprocessable_content
         end
@@ -29,7 +27,7 @@ module Api
 
       def update
         if @word.update(word_params)
-          render json: @word.as_json(only: Word::API_FIELDS)
+          render json: WordResource.new(@word).serialize
         else
           render json: { errors: @word.errors.full_messages }, status: :unprocessable_content
         end
@@ -56,14 +54,6 @@ module Api
         return [] if params[:include].blank?
 
         params[:include].split(',').map(&:strip).select { |i| ALLOWED_INCLUDES.include?(i) }
-      end
-
-      def word_json(word, includes: [])
-        json = word.as_json(only: Word::API_FIELDS)
-        includes.each do |assoc|
-          json[assoc] = word.public_send(assoc).sort_by(&:display_order).as_json
-        end
-        json
       end
 
       def word_params
