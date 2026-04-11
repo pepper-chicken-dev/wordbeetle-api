@@ -47,7 +47,7 @@ module Api
       end
 
       def meaning_params
-        params.expect(meaning: %i[content display_order])
+        params.expect(meaning: %i[definition display_order])
       end
     end
   end
