@@ -35,12 +35,12 @@ RSpec.describe 'Api::V1::Meanings', type: :request do
 
   describe 'GET /api/v1/wordbooks/:wordbook_id/words/:word_id/meanings/:id' do
     it 'returns the meaning' do
-      meaning = create(:meaning, word: word, content: '挨拶')
+      meaning = create(:meaning, word: word, definition: '挨拶')
 
       get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}/meanings/#{meaning.id}", headers: headers
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body['content']).to eq('挨拶')
+      expect(response.parsed_body['definition']).to eq('挨拶')
     end
 
     it "returns not_found for another user's meaning" do
@@ -59,7 +59,7 @@ RSpec.describe 'Api::V1::Meanings', type: :request do
       it 'creates a meaning' do
         expect do
           post "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}/meanings",
-               params: { meaning: { content: '意味', display_order: 1 } }, headers: headers
+               params: { meaning: { definition: '意味', display_order: 1 } }, headers: headers
         end.to change(Meaning, :count).by(1)
 
         expect(response).to have_http_status(:created)
@@ -69,7 +69,7 @@ RSpec.describe 'Api::V1::Meanings', type: :request do
     context 'with invalid params' do
       it 'returns unprocessable_entity' do
         post "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}/meanings",
-             params: { meaning: { content: '', display_order: 1 } }, headers: headers
+             params: { meaning: { definition: '', display_order: 1 } }, headers: headers
 
         expect(response).to have_http_status(:unprocessable_entity)
       end
@@ -80,7 +80,7 @@ RSpec.describe 'Api::V1::Meanings', type: :request do
       other_word = create(:word, wordbook: other_wordbook)
 
       post "/api/v1/wordbooks/#{other_wordbook.id}/words/#{other_word.id}/meanings",
-           params: { meaning: { content: 'test', display_order: 1 } }, headers: headers
+           params: { meaning: { definition: 'test', display_order: 1 } }, headers: headers
 
       expect(response).to have_http_status(:not_found)
     end
@@ -91,10 +91,10 @@ RSpec.describe 'Api::V1::Meanings', type: :request do
 
     it 'updates the meaning' do
       patch "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}/meanings/#{meaning.id}",
-            params: { meaning: { content: '更新された意味' } }, headers: headers
+            params: { meaning: { definition: '更新された意味' } }, headers: headers
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body['content']).to eq('更新された意味')
+      expect(response.parsed_body['definition']).to eq('更新された意味')
     end
 
     it "returns not_found for another user's meaning" do
@@ -103,7 +103,7 @@ RSpec.describe 'Api::V1::Meanings', type: :request do
       other_meaning = create(:meaning, word: other_word)
 
       patch "/api/v1/wordbooks/#{other_wordbook.id}/words/#{other_word.id}/meanings/#{other_meaning.id}",
-            params: { meaning: { content: 'hacked' } }, headers: headers
+            params: { meaning: { definition: 'hacked' } }, headers: headers
 
       expect(response).to have_http_status(:not_found)
     end

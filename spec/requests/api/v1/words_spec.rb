@@ -18,13 +18,13 @@ RSpec.describe 'Api::V1::Words', type: :request do
 
     it 'includes first_meaning for each word' do
       word = create(:word, wordbook: wordbook)
-      create(:meaning, word: word, content: 'second', display_order: 2)
-      create(:meaning, word: word, content: 'first', display_order: 1)
+      create(:meaning, word: word, definition: 'second', display_order: 2)
+      create(:meaning, word: word, definition: 'first', display_order: 1)
 
       get "/api/v1/wordbooks/#{wordbook.id}/words", headers: headers
 
       returned_word = response.parsed_body.find { |w| w['id'] == word.id }
-      expect(returned_word['first_meaning']['content']).to eq('first')
+      expect(returned_word['first_meaning']['definition']).to eq('first')
     end
 
     it 'returns null first_meaning when word has no meanings' do
@@ -73,8 +73,8 @@ RSpec.describe 'Api::V1::Words', type: :request do
       let(:word) { create(:word, wordbook: wordbook) }
 
       before do
-        create(:meaning, word: word, content: 'meaning1', display_order: 2)
-        create(:meaning, word: word, content: 'meaning2', display_order: 1)
+        create(:meaning, word: word, definition: 'meaning1', display_order: 2)
+        create(:meaning, word: word, definition: 'meaning2', display_order: 1)
         create(:example, word: word, sentence: 'Example1', display_order: 2)
         create(:example, word: word, sentence: 'Example2', display_order: 1)
       end
@@ -85,7 +85,7 @@ RSpec.describe 'Api::V1::Words', type: :request do
         expect(response).to have_http_status(:ok)
         body = response.parsed_body
         expect(body['meanings'].size).to eq(2)
-        expect(body['meanings'].pluck('content')).to eq(%w[meaning2 meaning1])
+        expect(body['meanings'].pluck('definition')).to eq(%w[meaning2 meaning1])
         expect(body).not_to have_key('examples')
       end
 
