@@ -42,7 +42,7 @@ entity "meanings" as meanings {
   *id : bigint <<PK>>
   --
   *word_id : bigint <<FK>>
-  *content : text
+  *definition : text
   *display_order : integer
   created_at : datetime
   updated_at : datetime

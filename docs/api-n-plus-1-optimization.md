@@ -55,7 +55,7 @@ const meaningEntries = await Promise.all(
       // 追加: display_order が最小の meaning を1件だけ含める
       "first_meaning": {
         "id": 10,
-        "content": "りんご",
+        "definition": "りんご",
         "display_order": 1
       }
     }
@@ -111,8 +111,8 @@ GET /wordbooks/:wordbookId/words/:wordId?include=meanings,examples
     "next_review_at": null,
     // 追加
     "meanings": [
-      { "id": 10, "content": "りんご", "display_order": 1 },
-      { "id": 11, "content": "果物の一種", "display_order": 2 }
+      { "id": 10, "definition": "りんご", "display_order": 1 },
+      { "id": 11, "definition": "果物の一種", "display_order": 2 }
     ],
     // 追加
     "examples": [
@@ -190,7 +190,7 @@ GET /wordbooks/:wordbookId/test/words
       "status": "not_studied",
       "next_review_at": null,
       "meanings": [
-        { "id": 10, "content": "りんご", "display_order": 1 }
+        { "id": 10, "definition": "りんご", "display_order": 1 }
       ],
       "examples": [
         {

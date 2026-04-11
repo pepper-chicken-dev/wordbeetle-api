@@ -87,7 +87,7 @@ end
 ### Meaning モデル
 
 ```bash
-bin/rails generate model Meaning word:references content:text display_order:integer
+bin/rails generate model Meaning word:references definition:text display_order:integer
 ```
 
 マイグレーションファイルを編集：
@@ -98,7 +98,7 @@ class CreateMeanings < ActiveRecord::Migration[8.1]
   def change
     create_table :meanings do |t|
       t.references :word, null: false, foreign_key: true
-      t.text :content, null: false
+      t.text :definition, null: false
       t.integer :display_order, null: false
 
       t.timestamps
@@ -114,7 +114,7 @@ end
 class Meaning < ApplicationRecord
   belongs_to :word
 
-  validates :content, presence: true
+  validates :definition, presence: true
   validates :display_order, presence: true, numericality: { only_integer: true, greater_than: 0 }
 end
 ```
@@ -381,13 +381,13 @@ word2 = Word.create!(
 puts "Creating meanings..."
 Meaning.create!(
   word: word1,
-  content: "りんご",
+  definition: "りんご",
   display_order: 1
 )
 
 Meaning.create!(
   word: word2,
-  content: "本",
+  definition: "本",
   display_order: 1
 )
 

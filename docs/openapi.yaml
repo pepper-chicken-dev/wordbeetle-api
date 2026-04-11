@@ -447,9 +447,9 @@ paths:
               properties:
                 meaning:
                   type: object
-                  required: [content, display_order]
+                  required: [definition, display_order]
                   properties:
-                    content:
+                    definition:
                       type: string
                     display_order:
                       type: integer
@@ -511,7 +511,7 @@ paths:
                 meaning:
                   type: object
                   properties:
-                    content:
+                    definition:
                       type: string
                     display_order:
                       type: integer
@@ -936,7 +936,7 @@ components:
               description: The meaning with the lowest display_order, or null if no meanings exist
               type: object
               properties:
-                content:
+                definition:
                   type: string
 
     WordWithRelations:
@@ -992,7 +992,7 @@ components:
           type: integer
         word_id:
           type: integer
-        content:
+        definition:
           type: string
         display_order:
           type: integer

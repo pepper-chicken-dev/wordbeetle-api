@@ -400,7 +400,7 @@ WordBeetleは、効率的な単語学習を実現する間隔反復学習機能�
 
 - [P0] id
 - [P0] word_id
-- [P0] content
+- [P0] definition
 - [P0] display_order
 - [P0] created_at
 - [P0] updated_at
