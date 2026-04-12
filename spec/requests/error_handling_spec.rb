@@ -21,4 +21,17 @@ RSpec.describe 'Error handling', type: :request do
       expect(response.parsed_body['error']).to eq('Not found')
     end
   end
+
+  describe 'ActiveRecord::RecordNotUnique' do
+    it 'returns conflict for duplicate record' do
+      allow(Wordbook).to receive(:new).and_raise(
+        ActiveRecord::RecordNotUnique.new('Duplicate entry')
+      )
+
+      post '/api/v1/wordbooks', params: { wordbook: { title: 'Test' } }, headers: headers
+
+      expect(response).to have_http_status(:conflict)
+      expect(response.parsed_body['error']).to eq('Duplicate record')
+    end
+  end
 end
