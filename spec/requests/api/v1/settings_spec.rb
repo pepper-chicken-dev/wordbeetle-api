@@ -82,7 +82,8 @@ RSpec.describe 'Api::V1::Settings', type: :request do
         post '/api/v1/setting', params: params, headers: headers
 
         expect(response).to have_http_status(:unprocessable_entity)
-        expect(response.parsed_body['errors']).to include('intervals must be in ascending order: hard < uncertain < easy')
+        expected_message = 'intervals must be in ascending order: hard < uncertain < easy'
+        expect(response.parsed_body['errors']).to include(expected_message)
       end
     end
   end
@@ -112,7 +113,8 @@ RSpec.describe 'Api::V1::Settings', type: :request do
         }, headers: headers
 
         expect(response).to have_http_status(:unprocessable_entity)
-        expect(response.parsed_body['errors']).to include('intervals must be in ascending order: hard < uncertain < easy')
+        expected_message = 'intervals must be in ascending order: hard < uncertain < easy'
+        expect(response.parsed_body['errors']).to include(expected_message)
       end
     end
   end
