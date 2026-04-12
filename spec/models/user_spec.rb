@@ -227,7 +227,7 @@ RSpec.describe User, type: :model do
 
     context 'when user has no setting record' do
       it 'returns the default setting' do
-        expect(user.effective_setting).to eq(Setting.default)
+        expect(user.effective_setting.attributes).to eq(Setting.default.attributes)
       end
     end
   end
