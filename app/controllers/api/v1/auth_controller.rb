@@ -45,7 +45,7 @@ module Api
       private
 
       def handle_guest_migration(google_payload)
-        guest_user = User.find_guest_from_token(params[:guest_token])
+        guest_user = User.find_by_token(params[:guest_token])
 
         return render json: { error: 'Invalid guest token' }, status: :unauthorized unless guest_user
 

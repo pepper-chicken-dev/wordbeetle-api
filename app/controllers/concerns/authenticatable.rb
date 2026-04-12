@@ -11,10 +11,7 @@ module Authenticatable
     token = request.headers['Authorization']&.split('Bearer ')&.last
     return render_unauthorized unless token
 
-    payload = JsonWebToken.decode(token)
-    return render_unauthorized unless payload
-
-    @current_user = User.find_by(id: payload['sub'])
+    @current_user = User.find_by_token(token)
     render_unauthorized unless @current_user
   end
 

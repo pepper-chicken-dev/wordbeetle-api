@@ -91,29 +91,29 @@ RSpec.describe User, type: :model do
     end
   end
 
-  describe '.find_guest_from_token' do
+  describe '.find_by_token' do
     let(:guest_user) { create(:user, :guest) }
 
     context 'when token is valid and belongs to a guest user' do
       it 'returns the guest user' do
         token = JsonWebToken.encode(guest_user.id, expires_at: guest_user.guest_expires_at)
 
-        expect(described_class.find_guest_from_token(token)).to eq(guest_user)
+        expect(described_class.find_by_token(token)).to eq(guest_user)
       end
     end
 
     context 'when token is invalid' do
       it 'returns nil' do
-        expect(described_class.find_guest_from_token('invalid_token')).to be_nil
+        expect(described_class.find_by_token('invalid_token')).to be_nil
       end
     end
 
     context 'when token belongs to a Google user' do
-      it 'returns nil' do
+      it 'returns the Google user' do
         google_user = create(:user, provider: 'google')
         token = JsonWebToken.encode(google_user.id)
 
-        expect(described_class.find_guest_from_token(token)).to be_nil
+        expect(described_class.find_by_token(token)).to eq(google_user)
       end
     end
   end

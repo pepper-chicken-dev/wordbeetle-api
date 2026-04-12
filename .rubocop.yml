@@ -51,3 +51,7 @@ Rails/BulkChangeTable:
 Rails/SquishedSQLHeredocs:
   Exclude:
     - "db/migrate/**/*"
+
+Rails/DynamicFindBy:
+  AllowedMethods:
+    - find_by_token
