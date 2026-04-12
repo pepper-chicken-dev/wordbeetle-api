@@ -10,6 +10,4 @@ class Word < ApplicationRecord
   enum :status, { not_studied: 'not_studied', hard: 'hard', uncertain: 'uncertain', easy: 'easy' }
 
   scope :reviewable, -> { where('next_review_at IS NULL OR next_review_at <= ?', Time.current) }
-
-  API_FIELDS = %i[id spelling status next_review_at].freeze
 end

@@ -6,18 +6,18 @@ module Api
 
       def index
         examples = @word.examples
-        render json: examples
+        render json: ExampleResource.new(examples).serialize
       end
 
       def show
-        render json: @example
+        render json: ExampleResource.new(@example).serialize
       end
 
       def create
         example = @word.examples.new(example_params)
 
         if example.save
-          render json: example, status: :created
+          render json: ExampleResource.new(example).serialize, status: :created
         else
           render json: { errors: example.errors.full_messages }, status: :unprocessable_content
         end
@@ -25,7 +25,7 @@ module Api
 
       def update
         if @example.update(example_params)
-          render json: @example
+          render json: ExampleResource.new(@example).serialize
         else
           render json: { errors: @example.errors.full_messages }, status: :unprocessable_content
         end

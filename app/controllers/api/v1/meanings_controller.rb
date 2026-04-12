@@ -6,18 +6,18 @@ module Api
 
       def index
         meanings = @word.meanings
-        render json: meanings
+        render json: MeaningResource.new(meanings).serialize
       end
 
       def show
-        render json: @meaning
+        render json: MeaningResource.new(@meaning).serialize
       end
 
       def create
         meaning = @word.meanings.new(meaning_params)
 
         if meaning.save
-          render json: meaning, status: :created
+          render json: MeaningResource.new(meaning).serialize, status: :created
         else
           render json: { errors: meaning.errors.full_messages }, status: :unprocessable_content
         end
@@ -25,7 +25,7 @@ module Api
 
       def update
         if @meaning.update(meaning_params)
-          render json: @meaning
+          render json: MeaningResource.new(@meaning).serialize
         else
           render json: { errors: @meaning.errors.full_messages }, status: :unprocessable_content
         end
