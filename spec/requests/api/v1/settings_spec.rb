@@ -68,6 +68,24 @@ RSpec.describe 'Api::V1::Settings', type: :request do
         expect(response).to have_http_status(:unprocessable_entity)
       end
     end
+
+    context 'with intervals not in ascending order' do
+      it 'returns unprocessable_entity with error message' do
+        params = {
+          setting: {
+            hard_interval: { days: 5, hours: 0, minutes: 0 },
+            uncertain_interval: { days: 1, hours: 0, minutes: 0 },
+            easy_interval: { days: 7, hours: 0, minutes: 0 }
+          }
+        }
+
+        post '/api/v1/setting', params: params, headers: headers
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expected_message = 'intervals must be in ascending order: hard < uncertain < easy'
+        expect(response.parsed_body['errors']).to include(expected_message)
+      end
+    end
   end
 
   describe 'PATCH /api/v1/setting' do
@@ -82,6 +100,22 @@ RSpec.describe 'Api::V1::Settings', type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body['hard_interval']).to eq({ 'days' => 2, 'hours' => 0, 'minutes' => 0 })
+    end
+
+    context 'with intervals not in ascending order' do
+      it 'returns unprocessable_entity with error message' do
+        patch '/api/v1/setting', params: {
+          setting: {
+            hard_interval: { days: 1, hours: 0, minutes: 0 },
+            uncertain_interval: { days: 10, hours: 0, minutes: 0 },
+            easy_interval: { days: 3, hours: 0, minutes: 0 }
+          }
+        }, headers: headers
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expected_message = 'intervals must be in ascending order: hard < uncertain < easy'
+        expect(response.parsed_body['errors']).to include(expected_message)
+      end
     end
   end
 

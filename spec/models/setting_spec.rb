@@ -26,6 +26,45 @@ RSpec.describe Setting, type: :model do
     end
   end
 
+  describe 'custom validation: intervals_must_be_in_ascending_order' do
+    let(:user) { create(:user) }
+
+    it 'is valid when hard < uncertain < easy' do
+      setting = build(:setting, user: user, hard_interval: 1.day, uncertain_interval: 3.days, easy_interval: 7.days)
+      expect(setting).to be_valid
+    end
+
+    it 'is invalid when hard > uncertain' do
+      setting = build(:setting, user: user, hard_interval: 3.days, uncertain_interval: 1.day, easy_interval: 7.days)
+      expect(setting).not_to be_valid
+      expect(setting.errors[:base]).to include('intervals must be in ascending order: hard < uncertain < easy')
+    end
+
+    it 'is invalid when uncertain > easy' do
+      setting = build(:setting, user: user, hard_interval: 1.day, uncertain_interval: 7.days, easy_interval: 3.days)
+      expect(setting).not_to be_valid
+      expect(setting.errors[:base]).to include('intervals must be in ascending order: hard < uncertain < easy')
+    end
+
+    it 'is invalid when hard == uncertain' do
+      setting = build(:setting, user: user, hard_interval: 3.days, uncertain_interval: 3.days, easy_interval: 7.days)
+      expect(setting).not_to be_valid
+      expect(setting.errors[:base]).to include('intervals must be in ascending order: hard < uncertain < easy')
+    end
+
+    it 'does not add base error when any interval is blank' do
+      setting = build(:setting, user: user, hard_interval: nil, uncertain_interval: 3.days, easy_interval: 7.days)
+      setting.valid?
+      expect(setting.errors[:base]).not_to include('intervals must be in ascending order: hard < uncertain < easy')
+    end
+
+    it 'does not add base error when any interval fails the positive check' do
+      setting = build(:setting, user: user, hard_interval: 0.days, uncertain_interval: 3.days, easy_interval: 7.days)
+      setting.valid?
+      expect(setting.errors[:base]).not_to include('intervals must be in ascending order: hard < uncertain < easy')
+    end
+  end
+
   describe 'factory' do
     it 'creates a valid setting' do
       expect(build(:setting)).to be_valid
