@@ -4,14 +4,14 @@ module Api
       before_action :set_setting, only: %i[update destroy]
 
       def show
-        render json: setting_response(current_user.effective_setting)
+        render json: SettingResource.new(current_user.effective_setting).serialize
       end
 
       def create
         setting = current_user.build_setting(build_setting_params)
 
         if setting.save
-          render json: setting_response(setting), status: :created
+          render json: SettingResource.new(setting).serialize, status: :created
         else
           render json: { errors: setting.errors.full_messages }, status: :unprocessable_content
         end
@@ -19,7 +19,7 @@ module Api
 
       def update
         if @setting.update(build_setting_params)
-          render json: setting_response(@setting)
+          render json: SettingResource.new(@setting).serialize
         else
           render json: { errors: @setting.errors.full_messages }, status: :unprocessable_content
         end
@@ -64,20 +64,6 @@ module Api
         minutes = hash[:minutes].to_i
 
         days.days + hours.hours + minutes.minutes
-      end
-
-      def setting_response(setting)
-        {
-          hard_interval: duration_to_hash(setting.hard_interval),
-          uncertain_interval: duration_to_hash(setting.uncertain_interval),
-          easy_interval: duration_to_hash(setting.easy_interval)
-        }
-      end
-
-      def duration_to_hash(duration)
-        return nil if duration.blank?
-
-        { days: 0, hours: 0, minutes: 0 }.merge(duration.parts.slice(:days, :hours, :minutes))
       end
     end
   end

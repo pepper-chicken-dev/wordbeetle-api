@@ -7,7 +7,8 @@ module Api
         user = User.create!(provider: 'guest', guest_expires_at: 7.days.from_now)
         token = JsonWebToken.encode(user.id, expires_at: user.guest_expires_at)
 
-        render json: { user: user.as_json(only: [:guest_expires_at]), token: token }, status: :created
+        user_json = JSON.parse(UserResource.new(user, params: { type: :guest }).serialize)
+        render json: { user: user_json, token: token }, status: :created
       end
 
       def google
@@ -34,7 +35,8 @@ module Api
           u.avatar_url = payload['picture']
         end
 
-        render json: { user: user.as_json(only: %i[email name avatar_url]), token: JsonWebToken.encode(user.id) },
+        render json: { user: JSON.parse(UserResource.new(user, params: { type: :google }).serialize),
+                       token: JsonWebToken.encode(user.id) },
                status: :ok
       end
 
@@ -48,7 +50,7 @@ module Api
         result = guest_user.migrate_to_google(google_payload)
 
         if result.success?
-          user_json = result.user.as_json(only: %i[email name avatar_url])
+          user_json = JSON.parse(UserResource.new(result.user, params: { type: :google }).serialize)
           render json: { user: user_json, token: JsonWebToken.encode(result.user.id) },
                  status: :ok
         else
