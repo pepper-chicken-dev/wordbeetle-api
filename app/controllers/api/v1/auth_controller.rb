@@ -3,10 +3,6 @@ module Api
     class AuthController < ApplicationController
       skip_before_action :authenticate_user!
 
-      rescue_from GoogleIdToken::VerificationError do
-        render json: { error: 'Invalid ID token' }, status: :unauthorized
-      end
-
       def guest
         user = User.create!(provider: 'guest', guest_expires_at: 7.days.from_now)
         token = JsonWebToken.encode(user.id, expires_at: user.guest_expires_at)
