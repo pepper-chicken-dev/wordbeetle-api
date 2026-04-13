@@ -40,5 +40,12 @@ module WordbeetleApi
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+
+    config.exceptions_app = routes
+
+    config.action_dispatch.rescue_responses.merge!(
+      'ActiveRecord::RecordNotUnique' => :conflict,
+      'GoogleIdToken::VerificationError' => :unauthorized
+    )
   end
 end

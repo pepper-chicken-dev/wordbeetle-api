@@ -26,6 +26,6 @@ Rails.application.routes.draw do
     end
   end
 
-  # Defines the root path route ("/")
-  # root "posts#index"
+  # Error handling (must be last)
+  match '/:status', to: 'errors#show', via: :all, constraints: { status: /\d{3}/ }
 end
