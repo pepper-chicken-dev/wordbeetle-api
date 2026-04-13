@@ -11,7 +11,8 @@ module Api
         user = User.create!(provider: 'guest', guest_expires_at: 7.days.from_now)
         token = JsonWebToken.encode(user.id, expires_at: user.guest_expires_at)
 
-        render json: { user: JSON.parse(UserResource.new(user, params: { type: :guest }).serialize), token: token }, status: :created
+        user_json = JSON.parse(UserResource.new(user, params: { type: :guest }).serialize)
+        render json: { user: user_json, token: token }, status: :created
       end
 
       def google
