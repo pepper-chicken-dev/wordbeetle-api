@@ -1,4 +1,13 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(bundle exec rspec:*)",
+      "Bash(bin/rails:*)",
+      "Bash(bin/rubocop:*)",
+      "Bash(bin/brakeman:*)",
+      "Bash(bin/bundler-audit:*)"
+    ]
+  },
   "hooks": {
     "PostToolUse": [
       {
