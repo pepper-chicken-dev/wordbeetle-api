@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_11_035349) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_14_121300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -41,6 +41,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_11_035349) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_settings_on_user_id"
+    t.check_constraint "hard_interval < uncertain_interval AND uncertain_interval < easy_interval", name: "check_settings_intervals_ascending_order"
+    t.check_constraint "hard_interval > 'PT0S'::interval AND uncertain_interval > 'PT0S'::interval AND easy_interval > 'PT0S'::interval", name: "check_settings_intervals_positive"
   end
 
   create_table "users", force: :cascade do |t|
@@ -56,7 +58,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_11_035349) do
     t.index ["provider", "provider_uid"], name: "index_users_on_provider_and_provider_uid", unique: true
     t.check_constraint "provider::text <> 'guest'::text OR guest_expires_at IS NOT NULL", name: "check_guest_expires_at_presence"
     t.check_constraint "provider::text = 'guest'::text OR provider_uid IS NOT NULL", name: "chk_provider_uid_required_for_non_guest"
-    t.check_constraint "provider::text = ANY (ARRAY['google'::character varying, 'guest'::character varying]::text[])", name: "check_users_provider_values"
+    t.check_constraint "provider::text = ANY (ARRAY['google'::character varying::text, 'guest'::character varying::text])", name: "check_users_provider_values"
   end
 
   create_table "wordbooks", force: :cascade do |t|
@@ -75,7 +77,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_11_035349) do
     t.datetime "updated_at", null: false
     t.bigint "wordbook_id", null: false
     t.index ["wordbook_id"], name: "index_words_on_wordbook_id"
-    t.check_constraint "status::text = ANY (ARRAY['not_studied'::character varying, 'hard'::character varying, 'uncertain'::character varying, 'easy'::character varying]::text[])", name: "check_words_status_values"
+    t.check_constraint "status::text = ANY (ARRAY['not_studied'::character varying::text, 'hard'::character varying::text, 'uncertain'::character varying::text, 'easy'::character varying::text])", name: "check_words_status_values"
   end
 
   add_foreign_key "examples", "words"
