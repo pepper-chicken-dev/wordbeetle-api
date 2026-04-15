@@ -56,7 +56,7 @@ RSpec.describe 'Api::V1::Settings', type: :request do
     end
 
     context 'with missing intervals' do
-      it 'returns unprocessable_entity' do
+      it 'returns unprocessable_content' do
         params = {
           setting: {
             hard_interval: { days: 1, hours: 0, minutes: 0 }
@@ -65,12 +65,12 @@ RSpec.describe 'Api::V1::Settings', type: :request do
 
         post '/api/v1/setting', params: params, headers: headers
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
 
     context 'with intervals not in ascending order' do
-      it 'returns unprocessable_entity with error message' do
+      it 'returns unprocessable_content with error message' do
         params = {
           setting: {
             hard_interval: { days: 5, hours: 0, minutes: 0 },
@@ -81,7 +81,7 @@ RSpec.describe 'Api::V1::Settings', type: :request do
 
         post '/api/v1/setting', params: params, headers: headers
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expected_message = 'intervals must be in ascending order: hard < uncertain < easy'
         expect(response.parsed_body['errors']).to include(expected_message)
       end
@@ -103,7 +103,7 @@ RSpec.describe 'Api::V1::Settings', type: :request do
     end
 
     context 'with intervals not in ascending order' do
-      it 'returns unprocessable_entity with error message' do
+      it 'returns unprocessable_content with error message' do
         patch '/api/v1/setting', params: {
           setting: {
             hard_interval: { days: 1, hours: 0, minutes: 0 },
@@ -112,7 +112,7 @@ RSpec.describe 'Api::V1::Settings', type: :request do
           }
         }, headers: headers
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expected_message = 'intervals must be in ascending order: hard < uncertain < easy'
         expect(response.parsed_body['errors']).to include(expected_message)
       end
