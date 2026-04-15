@@ -74,11 +74,11 @@ RSpec.describe 'Api::V1::Examples', type: :request do
     end
 
     context 'with invalid params' do
-      it 'returns unprocessable_entity' do
+      it 'returns unprocessable_content' do
         post "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}/examples",
              params: { example: { sentence: '', translation: '翻訳', display_order: 1 } }, headers: headers
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
 

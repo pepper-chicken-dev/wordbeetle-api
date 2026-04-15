@@ -67,10 +67,10 @@ RSpec.describe 'Api::V1::Wordbooks', type: :request do
     end
 
     context 'with invalid params' do
-      it 'returns unprocessable_entity' do
+      it 'returns unprocessable_content' do
         post '/api/v1/wordbooks', params: { wordbook: { title: '' } }, headers: headers
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expect(response.parsed_body['errors']).to include("Title can't be blank")
       end
     end
@@ -89,10 +89,10 @@ RSpec.describe 'Api::V1::Wordbooks', type: :request do
     end
 
     context 'with invalid params' do
-      it 'returns unprocessable_entity' do
+      it 'returns unprocessable_content' do
         patch "/api/v1/wordbooks/#{wordbook.id}", params: { wordbook: { title: '' } }, headers: headers
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
 
