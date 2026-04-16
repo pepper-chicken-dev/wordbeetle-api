@@ -15,20 +15,13 @@ module Api
 
       def create
         example = @word.examples.new(example_params)
-
-        if example.save
-          render json: ExampleResource.new(example).serialize, status: :created
-        else
-          render json: { errors: example.errors.full_messages }, status: :unprocessable_content
-        end
+        example.save!
+        render json: ExampleResource.new(example).serialize, status: :created
       end
 
       def update
-        if @example.update(example_params)
-          render json: ExampleResource.new(@example).serialize
-        else
-          render json: { errors: @example.errors.full_messages }, status: :unprocessable_content
-        end
+        @example.update!(example_params)
+        render json: ExampleResource.new(@example).serialize
       end
 
       def destroy

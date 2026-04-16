@@ -17,20 +17,13 @@ module Api
 
       def create
         word = @wordbook.words.new(word_params)
-
-        if word.save
-          render json: WordResource.new(word).serialize, status: :created
-        else
-          render json: { errors: word.errors.full_messages }, status: :unprocessable_content
-        end
+        word.save!
+        render json: WordResource.new(word).serialize, status: :created
       end
 
       def update
-        if @word.update(word_params)
-          render json: WordResource.new(@word).serialize
-        else
-          render json: { errors: @word.errors.full_messages }, status: :unprocessable_content
-        end
+        @word.update!(word_params)
+        render json: WordResource.new(@word).serialize
       end
 
       def destroy

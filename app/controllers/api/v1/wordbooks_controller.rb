@@ -14,20 +14,13 @@ module Api
 
       def create
         wordbook = current_user.wordbooks.new(wordbook_params)
-
-        if wordbook.save
-          render json: WordbookResource.new(wordbook).serialize, status: :created
-        else
-          render json: { errors: wordbook.errors.full_messages }, status: :unprocessable_content
-        end
+        wordbook.save!
+        render json: WordbookResource.new(wordbook).serialize, status: :created
       end
 
       def update
-        if @wordbook.update(wordbook_params)
-          render json: WordbookResource.new(@wordbook).serialize
-        else
-          render json: { errors: @wordbook.errors.full_messages }, status: :unprocessable_content
-        end
+        @wordbook.update!(wordbook_params)
+        render json: WordbookResource.new(@wordbook).serialize
       end
 
       def destroy
