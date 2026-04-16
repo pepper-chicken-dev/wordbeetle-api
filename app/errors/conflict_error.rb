@@ -1,0 +1,1 @@
+class ConflictError < ApplicationError; end

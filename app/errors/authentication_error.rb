@@ -1,0 +1,1 @@
+class AuthenticationError < ApplicationError; end
