@@ -15,7 +15,7 @@ RSpec.describe 'Error handling', type: :request do
 
   describe 'ActiveRecord::RecordNotFound' do
     it 'returns not_found for nonexistent resource' do
-      get '/api/v1/wordbooks/999999', headers: headers
+      get '/api/v1/wordbooks/0', headers: headers
 
       expect(response).to have_http_status(:not_found)
       expect(response.parsed_body['error']).to eq('Not found')
