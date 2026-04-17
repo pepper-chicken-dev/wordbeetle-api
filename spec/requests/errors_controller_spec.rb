@@ -1,6 +1,43 @@
 require 'rails_helper'
 
-RSpec.describe 'Errors', type: :request do
+RSpec.describe 'ErrorsController', type: :request do
+  let(:user) { create(:user) }
+  let(:headers) { auth_headers_for(user) }
+
+  describe 'exception handling via exceptions_app' do
+    it 'returns bad_request for ActionController::ParameterMissing' do
+      post '/api/v1/wordbooks', params: {}, headers: headers
+
+      expect(response).to have_http_status(:bad_request)
+      expect(response.parsed_body['error']).to be_present
+    end
+
+    it 'returns unauthorized for GoogleIdToken::VerificationError' do
+      allow(GoogleIdToken).to receive(:decode).and_raise(GoogleIdToken::VerificationError)
+
+      post '/api/v1/auth/google', headers: { 'Authorization' => 'Bearer invalid_token' }
+
+      expect(response).to have_http_status(:unauthorized)
+      expect(response.parsed_body['error']).to eq('Unauthorized')
+    end
+
+    it 'returns not_found for ActiveRecord::RecordNotFound' do
+      get '/api/v1/wordbooks/0', headers: headers
+
+      expect(response).to have_http_status(:not_found)
+      expect(response.parsed_body['error']).to eq('Not found')
+    end
+
+    it 'returns conflict for ActiveRecord::RecordNotUnique' do
+      allow(Wordbook).to receive(:new).and_raise(ActiveRecord::RecordNotUnique.new('Duplicate entry'))
+
+      post '/api/v1/wordbooks', params: { wordbook: { title: 'Test' } }, headers: headers
+
+      expect(response).to have_http_status(:conflict)
+      expect(response.parsed_body['error']).to eq('Duplicate record')
+    end
+  end
+
   describe 'unknown routes' do
     it 'returns not_found for nonexistent GET path' do
       get '/nonexistent/path'
@@ -15,6 +52,17 @@ RSpec.describe 'Errors', type: :request do
 
       expect(response).to have_http_status(:not_found)
       expect(response.parsed_body['error']).to eq('Not found')
+    end
+  end
+
+  describe '5xx error responses' do
+    it 'returns internal_server_error for unhandled exception' do
+      exception = RuntimeError.new('something went wrong')
+
+      get '/500', env: { 'action_dispatch.exception' => exception }
+
+      expect(response).to have_http_status(:internal_server_error)
+      expect(response.parsed_body['error']).to eq('Internal server error')
     end
   end
 
