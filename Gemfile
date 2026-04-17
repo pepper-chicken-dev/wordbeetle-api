@@ -31,6 +31,9 @@ gem 'thruster', require: false
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
 # gem "rack-cors"
 
+# Rack middleware for rate limiting and throttling
+gem 'rack-attack'
+
 # Fast JSON serializer
 gem 'alba'
 
