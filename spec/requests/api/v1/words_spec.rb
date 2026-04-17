@@ -147,7 +147,7 @@ RSpec.describe 'Api::V1::Words', type: :request do
                                                        headers: headers
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(response.parsed_body['errors']).to include("Spelling can't be blank")
+        expect(response.parsed_body['error']).to eq('Unprocessable entity')
       end
     end
 

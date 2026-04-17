@@ -9,20 +9,13 @@ module Api
 
       def create
         setting = current_user.build_setting(build_setting_params)
-
-        if setting.save
-          render json: SettingResource.new(setting).serialize, status: :created
-        else
-          render json: { errors: setting.errors.full_messages }, status: :unprocessable_content
-        end
+        setting.save!
+        render json: SettingResource.new(setting).serialize, status: :created
       end
 
       def update
-        if @setting.update(build_setting_params)
-          render json: SettingResource.new(@setting).serialize
-        else
-          render json: { errors: @setting.errors.full_messages }, status: :unprocessable_content
-        end
+        @setting.update!(build_setting_params)
+        render json: SettingResource.new(@setting).serialize
       end
 
       def destroy

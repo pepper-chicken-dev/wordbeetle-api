@@ -15,20 +15,13 @@ module Api
 
       def create
         meaning = @word.meanings.new(meaning_params)
-
-        if meaning.save
-          render json: MeaningResource.new(meaning).serialize, status: :created
-        else
-          render json: { errors: meaning.errors.full_messages }, status: :unprocessable_content
-        end
+        meaning.save!
+        render json: MeaningResource.new(meaning).serialize, status: :created
       end
 
       def update
-        if @meaning.update(meaning_params)
-          render json: MeaningResource.new(@meaning).serialize
-        else
-          render json: { errors: @meaning.errors.full_messages }, status: :unprocessable_content
-        end
+        @meaning.update!(meaning_params)
+        render json: MeaningResource.new(@meaning).serialize
       end
 
       def destroy

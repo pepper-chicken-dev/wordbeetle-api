@@ -45,7 +45,11 @@ module WordbeetleApi
 
     config.action_dispatch.rescue_responses.merge!(
       'ActiveRecord::RecordNotUnique' => :conflict,
-      'GoogleIdToken::VerificationError' => :unauthorized
+      'GoogleIdToken::VerificationError' => :unauthorized,
+      'AuthenticationError' => :unauthorized,
+      'BadRequestError' => :bad_request,
+      'ConflictError' => :conflict,
+      'UnprocessableEntityError' => :unprocessable_entity
     )
   end
 end

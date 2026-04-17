@@ -60,7 +60,7 @@ RSpec.describe 'Api::V1::Auth', type: :request do
         post '/api/v1/auth/google'
 
         expect(response).to have_http_status(:bad_request)
-        expect(response.parsed_body['error']).to eq('Authorization header missing')
+        expect(response.parsed_body['error']).to eq('Bad request')
       end
     end
 
@@ -75,7 +75,7 @@ RSpec.describe 'Api::V1::Auth', type: :request do
         post '/api/v1/auth/google', headers: { 'Authorization' => 'Bearer invalid_token' }
 
         expect(response).to have_http_status(:unauthorized)
-        expect(response.parsed_body['error']).to eq('Invalid ID token')
+        expect(response.parsed_body['error']).to eq('Unauthorized')
       end
     end
 
@@ -144,7 +144,7 @@ RSpec.describe 'Api::V1::Auth', type: :request do
         post '/api/v1/auth/google', headers: { 'Authorization' => 'Bearer valid_token' }
 
         expect(response).to have_http_status(:conflict)
-        expect(response.parsed_body['error']).to include('already registered')
+        expect(response.parsed_body['error']).to eq('Duplicate record')
       end
     end
 
@@ -285,7 +285,7 @@ RSpec.describe 'Api::V1::Auth', type: :request do
                headers: { 'Authorization' => 'Bearer valid_token' }
 
           expect(response).to have_http_status(:unauthorized)
-          expect(response.parsed_body['error']).to eq('Invalid guest token')
+          expect(response.parsed_body['error']).to eq('Unauthorized')
         end
       end
 
@@ -301,7 +301,7 @@ RSpec.describe 'Api::V1::Auth', type: :request do
                headers: { 'Authorization' => 'Bearer valid_token' }
 
           expect(response).to have_http_status(:unauthorized)
-          expect(response.parsed_body['error']).to eq('Invalid guest token')
+          expect(response.parsed_body['error']).to eq('Unauthorized')
         end
       end
     end

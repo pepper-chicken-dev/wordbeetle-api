@@ -20,12 +20,27 @@ RSpec.describe 'Errors', type: :request do
 
   describe 'logging' do
     describe '4xx errors' do
-      it 'logs a warning for 404 errors' do
+      it 'logs a warning with exception details for 404 errors' do
         allow(Rails.logger).to receive(:warn)
 
         get '/nonexistent/path'
 
-        expect(Rails.logger).to have_received(:warn).with('Client error: 404 GET /nonexistent/path')
+        expect(Rails.logger).to have_received(:warn).with(
+          a_string_starting_with('Client error: 404 GET /nonexistent/path - ')
+        )
+      end
+
+      it 'logs a warning with exception details for 422 errors' do
+        exception = ActiveRecord::RecordInvalid.new
+        allow(Rails.logger).to receive(:warn)
+
+        get '/422', env: { 'action_dispatch.exception' => exception }
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.parsed_body['error']).to eq('Unprocessable entity')
+        expect(Rails.logger).to have_received(:warn).with(
+          a_string_matching(%r{Client error: 422 GET /422 - ActiveRecord::RecordInvalid:})
+        )
       end
     end
 

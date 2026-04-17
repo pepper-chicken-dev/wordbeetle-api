@@ -14,7 +14,7 @@ module Api
       def google
         id_token = request.headers['Authorization']&.split('Bearer ')&.last
 
-        return render json: { error: 'Authorization header missing' }, status: :bad_request if id_token.blank?
+        raise BadRequestError, 'Authorization header missing' if id_token.blank?
 
         payload = GoogleIdToken.decode(id_token)
 
@@ -24,9 +24,8 @@ module Api
         existing_user = User.find_by(email: email) if email.present?
 
         if existing_user && existing_user.provider != 'google'
-          message = "This email is already registered with #{existing_user.provider}. " \
-                    "Please sign in with #{existing_user.provider}."
-          return render json: { error: message }, status: :conflict
+          raise ConflictError, "This email is already registered with #{existing_user.provider}. " \
+                               "Please sign in with #{existing_user.provider}."
         end
 
         user = User.find_or_create_by(provider: 'google', provider_uid: payload['sub']) do |u|
@@ -44,18 +43,14 @@ module Api
 
       def handle_guest_migration(google_payload)
         guest_user = User.find_by_token(params[:guest_token])
-
-        return render json: { error: 'Invalid guest token' }, status: :unauthorized unless guest_user&.guest?
+        raise AuthenticationError, 'Invalid guest token' unless guest_user&.guest?
 
         result = guest_user.migrate_to_google(google_payload)
+        raise UnprocessableEntityError, result.error unless result.success?
 
-        if result.success?
-          user_json = JSON.parse(UserResource.new(result.user, params: { type: :google }).serialize)
-          render json: { user: user_json, token: JsonWebToken.encode(result.user.id) },
-                 status: :ok
-        else
-          render json: { error: result.error }, status: :unprocessable_content
-        end
+        user_json = JSON.parse(UserResource.new(result.user, params: { type: :google }).serialize)
+        render json: { user: user_json, token: JsonWebToken.encode(result.user.id) },
+               status: :ok
       end
     end
   end

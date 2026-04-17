@@ -11,17 +11,20 @@ class ErrorsController < ActionController::API
 
     case status
     when 400
-      log_client_error(status)
-      exception&.message || 'Bad request'
+      log_client_error(status, exception)
+      'Bad request'
     when 401
-      log_client_error(status)
-      exception.is_a?(GoogleIdToken::VerificationError) ? 'Invalid ID token' : 'Unauthorized'
+      log_client_error(status, exception)
+      'Unauthorized'
     when 404
-      log_client_error(status)
+      log_client_error(status, exception)
       'Not found'
     when 409
-      log_client_error(status)
+      log_client_error(status, exception)
       'Duplicate record'
+    when 422
+      log_client_error(status, exception)
+      'Unprocessable entity'
     when 500
       log_server_error(exception) if exception
       'Internal server error'
@@ -31,10 +34,12 @@ class ErrorsController < ActionController::API
     end
   end
 
-  def log_client_error(status)
+  def log_client_error(status, exception = nil)
     original_method = request.env['action_dispatch.original_request_method'] || request.method
     original_path = request.env['action_dispatch.original_path'] || request.path
-    Rails.logger.warn("Client error: #{status} #{original_method} #{original_path}")
+    message = "Client error: #{status} #{original_method} #{original_path}"
+    message += " - #{exception.class}: #{exception.message}" if exception
+    Rails.logger.warn(message)
   end
 
   def log_server_error(exception)

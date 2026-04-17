@@ -71,7 +71,7 @@ RSpec.describe 'Api::V1::Wordbooks', type: :request do
         post '/api/v1/wordbooks', params: { wordbook: { title: '' } }, headers: headers
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(response.parsed_body['errors']).to include("Title can't be blank")
+        expect(response.parsed_body['error']).to eq('Unprocessable entity')
       end
     end
   end
