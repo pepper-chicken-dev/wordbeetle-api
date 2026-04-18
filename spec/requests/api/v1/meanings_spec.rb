@@ -14,7 +14,7 @@ RSpec.describe 'Api::V1::Meanings', type: :request do
       get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}/meanings", headers: headers
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body.size).to eq(2)
+      expect(response.parsed_body['data'].size).to eq(2)
     end
 
     it 'returns 401 without authentication' do
@@ -30,6 +30,49 @@ RSpec.describe 'Api::V1::Meanings', type: :request do
       get "/api/v1/wordbooks/#{other_wordbook.id}/words/#{other_word.id}/meanings", headers: headers
 
       expect(response).to have_http_status(:not_found)
+    end
+
+    describe 'pagination' do
+      it 'returns pagination metadata' do
+        create_list(:meaning, 2, word: word)
+
+        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}/meanings", headers: headers
+
+        pagination = response.parsed_body['pagination']
+        expect(pagination['current_page']).to eq(1)
+        expect(pagination['total_count']).to eq(2)
+        expect(pagination['per_page']).to eq(25)
+        expect(pagination['total_pages']).to eq(1)
+      end
+
+      it 'supports per_page parameter' do
+        create_list(:meaning, 3, word: word)
+
+        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}/meanings", params: { per_page: 2 }, headers: headers
+
+        expect(response.parsed_body['data'].size).to eq(2)
+        expect(response.parsed_body['pagination']['total_pages']).to eq(2)
+      end
+
+      it 'supports page parameter' do
+        create_list(:meaning, 3, word: word)
+
+        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}/meanings",
+            params: { per_page: 2, page: 2 }, headers: headers
+
+        expect(response.parsed_body['data'].size).to eq(1)
+        expect(response.parsed_body['pagination']['current_page']).to eq(2)
+      end
+
+      it 'clamps out-of-range page to last page' do
+        create_list(:meaning, 2, word: word)
+
+        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}/meanings",
+            params: { page: 999 }, headers: headers
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['pagination']['current_page']).to eq(1)
+      end
     end
   end
 

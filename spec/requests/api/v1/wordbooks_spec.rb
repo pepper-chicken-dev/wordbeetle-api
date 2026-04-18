@@ -12,20 +12,61 @@ RSpec.describe 'Api::V1::Wordbooks', type: :request do
       get '/api/v1/wordbooks', headers: headers
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body.size).to eq(3)
+      expect(response.parsed_body['data'].size).to eq(3)
     end
 
     it 'returns empty array when no wordbooks exist' do
       get '/api/v1/wordbooks', headers: headers
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body).to eq([])
+      expect(response.parsed_body['data']).to eq([])
     end
 
     it 'returns 401 without authentication' do
       get '/api/v1/wordbooks'
 
       expect(response).to have_http_status(:unauthorized)
+    end
+
+    describe 'pagination' do
+      it 'returns pagination metadata' do
+        create_list(:wordbook, 3, user: user)
+
+        get '/api/v1/wordbooks', headers: headers
+
+        pagination = response.parsed_body['pagination']
+        expect(pagination['current_page']).to eq(1)
+        expect(pagination['total_count']).to eq(3)
+        expect(pagination['per_page']).to eq(25)
+        expect(pagination['total_pages']).to eq(1)
+      end
+
+      it 'supports per_page parameter' do
+        create_list(:wordbook, 3, user: user)
+
+        get '/api/v1/wordbooks', params: { per_page: 2 }, headers: headers
+
+        expect(response.parsed_body['data'].size).to eq(2)
+        expect(response.parsed_body['pagination']['total_pages']).to eq(2)
+      end
+
+      it 'supports page parameter' do
+        create_list(:wordbook, 3, user: user)
+
+        get '/api/v1/wordbooks', params: { per_page: 2, page: 2 }, headers: headers
+
+        expect(response.parsed_body['data'].size).to eq(1)
+        expect(response.parsed_body['pagination']['current_page']).to eq(2)
+      end
+
+      it 'clamps out-of-range page to last page' do
+        create_list(:wordbook, 2, user: user)
+
+        get '/api/v1/wordbooks', params: { page: 999 }, headers: headers
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['pagination']['current_page']).to eq(1)
+      end
     end
   end
 
