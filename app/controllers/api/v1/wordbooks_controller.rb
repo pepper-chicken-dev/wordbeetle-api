@@ -4,8 +4,8 @@ module Api
       before_action :set_wordbook, only: %i[show update destroy]
 
       def index
-        wordbooks = current_user.wordbooks
-        render json: WordbookResource.new(wordbooks).serialize
+        records, meta = paginate(current_user.wordbooks)
+        render json: { data: JSON.parse(WordbookResource.new(records).serialize), pagination: meta }
       end
 
       def show

@@ -5,8 +5,8 @@ module Api
       before_action :set_example, only: %i[show update destroy]
 
       def index
-        examples = @word.examples
-        render json: ExampleResource.new(examples).serialize
+        records, meta = paginate(@word.examples)
+        render json: { data: JSON.parse(ExampleResource.new(records).serialize), pagination: meta }
       end
 
       def show

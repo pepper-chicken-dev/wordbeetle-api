@@ -5,8 +5,8 @@ module Api
       before_action :set_meaning, only: %i[show update destroy]
 
       def index
-        meanings = @word.meanings
-        render json: MeaningResource.new(meanings).serialize
+        records, meta = paginate(@word.meanings)
+        render json: { data: JSON.parse(MeaningResource.new(records).serialize), pagination: meta }
       end
 
       def show

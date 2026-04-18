@@ -5,8 +5,11 @@ module Api
       before_action :set_word, only: %i[show update destroy]
 
       def index
-        words = @wordbook.words.includes(:first_meaning)
-        render json: WordResource.new(words, params: { include_first_meaning: true }).serialize
+        records, meta = paginate(@wordbook.words.includes(:first_meaning))
+        render json: {
+          data: JSON.parse(WordResource.new(records, params: { include_first_meaning: true }).serialize),
+          pagination: meta
+        }
       end
 
       def show
