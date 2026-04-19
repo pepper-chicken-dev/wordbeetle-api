@@ -6,6 +6,10 @@ RSpec.describe 'Api::V1::Words', type: :request do
   let(:wordbook) { create(:wordbook, user: user) }
 
   describe 'GET /api/v1/wordbooks/:wordbook_id/words' do
+    let(:endpoint_path) { "/api/v1/wordbooks/#{wordbook.id}/words" }
+
+    it_behaves_like 'paginated endpoint', :word, -> { { wordbook: wordbook } }
+
     it "returns current user's words" do
       create_list(:word, 3, wordbook: wordbook)
       create(:word) # another user's word
@@ -13,7 +17,7 @@ RSpec.describe 'Api::V1::Words', type: :request do
       get "/api/v1/wordbooks/#{wordbook.id}/words", headers: headers
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body.size).to eq(3)
+      expect(response.parsed_body['data'].size).to eq(3)
     end
 
     it 'includes first_meaning for each word' do
@@ -23,7 +27,7 @@ RSpec.describe 'Api::V1::Words', type: :request do
 
       get "/api/v1/wordbooks/#{wordbook.id}/words", headers: headers
 
-      returned_word = response.parsed_body.find { |w| w['id'] == word.id }
+      returned_word = response.parsed_body['data'].find { |w| w['id'] == word.id }
       expect(returned_word['first_meaning']['definition']).to eq('first')
     end
 
@@ -32,7 +36,7 @@ RSpec.describe 'Api::V1::Words', type: :request do
 
       get "/api/v1/wordbooks/#{wordbook.id}/words", headers: headers
 
-      expect(response.parsed_body.first['first_meaning']).to be_nil
+      expect(response.parsed_body['data'].first['first_meaning']).to be_nil
     end
 
     it 'returns 401 without authentication' do

@@ -5,6 +5,10 @@ RSpec.describe 'Api::V1::Wordbooks', type: :request do
   let(:headers) { auth_headers_for(user) }
 
   describe 'GET /api/v1/wordbooks' do
+    let(:endpoint_path) { '/api/v1/wordbooks' }
+
+    it_behaves_like 'paginated endpoint', :wordbook, -> { { user: user } }
+
     it "returns current user's wordbooks" do
       create_list(:wordbook, 3, user: user)
       create(:wordbook) # another user's wordbook
@@ -12,14 +16,14 @@ RSpec.describe 'Api::V1::Wordbooks', type: :request do
       get '/api/v1/wordbooks', headers: headers
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body.size).to eq(3)
+      expect(response.parsed_body['data'].size).to eq(3)
     end
 
     it 'returns empty array when no wordbooks exist' do
       get '/api/v1/wordbooks', headers: headers
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body).to eq([])
+      expect(response.parsed_body['data']).to eq([])
     end
 
     it 'returns 401 without authentication' do

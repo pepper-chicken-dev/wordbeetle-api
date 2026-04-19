@@ -1,7 +1,3 @@
-require 'pagy/extras/items'
-require 'pagy/extras/overflow'
-
-Pagy::DEFAULT[:items] = 20
-Pagy::DEFAULT[:max_items] = 100
-Pagy::DEFAULT[:items_param] = :per_page
-Pagy::DEFAULT[:overflow] = :empty_page
+Pagy::OPTIONS[:limit] = 20
+Pagy::OPTIONS[:max_limit] = 100
+Pagy::OPTIONS[:limit_key] = 'per_page'
