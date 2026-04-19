@@ -6,7 +6,7 @@ module Api
 
       def index
         examples = @word.examples
-        render json: ExampleResource.new(examples).serialize
+        render_paginated(examples, ExampleResource)
       end
 
       def show

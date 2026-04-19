@@ -7,6 +7,10 @@ RSpec.describe 'Api::V1::Meanings', type: :request do
   let(:word) { create(:word, wordbook: wordbook) }
 
   describe 'GET /api/v1/wordbooks/:wordbook_id/words/:word_id/meanings' do
+    let(:endpoint_path) { "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}/meanings" }
+
+    it_behaves_like 'paginated endpoint', :meaning, -> { { word: word } }
+
     it "returns current user's meanings" do
       create_list(:meaning, 2, word: word)
       create(:meaning) # another user's meaning
@@ -14,7 +18,7 @@ RSpec.describe 'Api::V1::Meanings', type: :request do
       get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}/meanings", headers: headers
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body.size).to eq(2)
+      expect(response.parsed_body['data'].size).to eq(2)
     end
 
     it 'returns 401 without authentication' do

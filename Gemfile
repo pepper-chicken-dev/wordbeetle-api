@@ -37,6 +37,9 @@ gem 'rack-attack'
 # Fast JSON serializer
 gem 'alba'
 
+# Fast, lightweight pagination
+gem 'pagy'
+
 # Google authentication library for ID token verification
 gem 'googleauth'
 
