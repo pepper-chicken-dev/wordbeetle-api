@@ -113,15 +113,23 @@ paths:
       summary: List current user's wordbooks
       security:
         - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Wordbook"
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Wordbook"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
         "401":
           $ref: "#/components/responses/Unauthorized"
     post:
@@ -237,18 +245,26 @@ paths:
     get:
       tags: [Words]
       summary: List words in a wordbook
-      description: Returns all words with their first meaning (by display_order) included.
+      description: Returns words with their first meaning (by display_order) included.
       security:
         - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/WordWithFirstMeaning"
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/WordWithFirstMeaning"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
@@ -419,15 +435,23 @@ paths:
       summary: List meanings for a word
       security:
         - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Meaning"
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Meaning"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
@@ -558,15 +582,23 @@ paths:
       summary: List examples for a word
       security:
         - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Example"
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Example"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
@@ -834,6 +866,25 @@ components:
       required: true
       schema:
         type: integer
+    Page:
+      name: page
+      in: query
+      required: false
+      description: Page number (default 1)
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PerPage:
+      name: per_page
+      in: query
+      required: false
+      description: Number of items per page (default 20, max 100)
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
 
   responses:
     Unauthorized:
@@ -1071,6 +1122,18 @@ components:
         hours:
           type: integer
         minutes:
+          type: integer
+
+    Pagination:
+      type: object
+      properties:
+        current_page:
+          type: integer
+        total_pages:
+          type: integer
+        total_count:
+          type: integer
+        per_page:
           type: integer
 
     # ──── Error responses ────
