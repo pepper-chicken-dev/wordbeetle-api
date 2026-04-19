@@ -28,10 +28,17 @@ module Api
                                "Please sign in with #{existing_user.provider}."
         end
 
-        user = User.find_or_create_by(provider: 'google', provider_uid: payload['sub']) do |u|
-          u.email = email
-          u.name = payload['name']
-          u.avatar_url = payload['picture']
+        begin
+          user = User.find_or_create_by(provider: 'google', provider_uid: payload['sub']) do |u|
+            u.email = email
+            u.name = payload['name']
+            u.avatar_url = payload['picture']
+          end
+        rescue ActiveRecord::RecordNotUnique
+          Rails.logger.warn(
+            "Google auth race condition: RecordNotUnique for provider_uid=#{payload['sub']}, retrying find"
+          )
+          user = User.find_by!(provider: 'google', provider_uid: payload['sub'])
         end
 
         render json: { user: JSON.parse(UserResource.new(user, params: { type: :google }).serialize),

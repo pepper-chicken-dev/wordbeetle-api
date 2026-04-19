@@ -134,6 +134,32 @@ RSpec.describe 'Api::V1::Auth', type: :request do
       end
     end
 
+    context 'when RecordNotUnique is raised (race condition)' do
+      let!(:existing_user) do
+        create(:user, provider: 'google', provider_uid: 'google_uid_123', email: 'test@example.com')
+      end
+
+      before do
+        allow(Google::Auth::IDTokens).to receive(:verify_oidc).and_return(google_payload)
+        allow(User).to receive(:find_or_create_by).and_raise(ActiveRecord::RecordNotUnique)
+      end
+
+      it 'retries and returns the existing user' do
+        expect do
+          post '/api/v1/auth/google', headers: { 'Authorization' => 'Bearer valid_token' }
+        end.not_to change(User, :count)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['token']).to be_present
+      end
+
+      it 'logs a warning with provider_uid' do
+        allow(Rails.logger).to receive(:warn)
+        post '/api/v1/auth/google', headers: { 'Authorization' => 'Bearer valid_token' }
+        expect(Rails.logger).to have_received(:warn).with(/provider_uid=google_uid_123/)
+      end
+    end
+
     context 'when email is already registered with a different provider' do
       before do
         allow(Google::Auth::IDTokens).to receive(:verify_oidc).and_return(google_payload)
