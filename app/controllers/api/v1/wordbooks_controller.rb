@@ -5,7 +5,7 @@ module Api
 
       def index
         wordbooks = current_user.wordbooks
-        render json: WordbookResource.new(wordbooks).serialize
+        render_paginated(wordbooks, WordbookResource)
       end
 
       def show

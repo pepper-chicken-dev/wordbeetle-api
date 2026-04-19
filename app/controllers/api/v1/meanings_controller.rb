@@ -6,7 +6,7 @@ module Api
 
       def index
         meanings = @word.meanings
-        render json: MeaningResource.new(meanings).serialize
+        render_paginated(meanings, MeaningResource)
       end
 
       def show

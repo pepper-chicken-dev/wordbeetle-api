@@ -6,7 +6,7 @@ module Api
 
       def index
         words = @wordbook.words.includes(:first_meaning)
-        render json: WordResource.new(words, params: { include_first_meaning: true }).serialize
+        render_paginated(words, WordResource, params: { include_first_meaning: true })
       end
 
       def show
