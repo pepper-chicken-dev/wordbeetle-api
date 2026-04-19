@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe 'Api::V1::Words', type: :request do
+  include ActiveSupport::Testing::TimeHelpers
+
   let(:user) { create(:user) }
   let(:headers) { auth_headers_for(user) }
   let(:wordbook) { create(:wordbook, user: user) }
@@ -180,6 +182,71 @@ RSpec.describe 'Api::V1::Words', type: :request do
                                                                              headers: headers
 
       expect(response).to have_http_status(:not_found)
+    end
+
+    context 'when status changes' do
+      it 'recalculates next_review_at and returns the updated value' do
+        word = create(:word, wordbook: wordbook, status: 'easy', next_review_at: 10.days.from_now)
+
+        freeze_time do
+          patch "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}",
+                params: { word: { status: 'hard' } }, headers: headers
+
+          expect(response).to have_http_status(:ok)
+          # easy(7d) → hard(1d): 6 days earlier
+          expected = 10.days.from_now - 6.days
+          expect(Time.zone.parse(response.parsed_body['next_review_at'])).to be_within(1.second).of(expected)
+        end
+      end
+
+      it 'sets next_review_at to nil when changing to not_studied' do
+        word = create(:word, wordbook: wordbook, status: 'easy', next_review_at: 5.days.from_now)
+
+        patch "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}",
+              params: { word: { status: 'not_studied' } }, headers: headers
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['next_review_at']).to be_nil
+      end
+
+      it 'sets next_review_at to now + interval when changing from not_studied' do
+        word = create(:word, wordbook: wordbook, status: 'not_studied', next_review_at: nil)
+
+        freeze_time do
+          patch "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}",
+                params: { word: { status: 'easy' } }, headers: headers
+
+          expect(response).to have_http_status(:ok)
+          expect(Time.zone.parse(response.parsed_body['next_review_at'])).to be_within(1.second).of(7.days.from_now)
+        end
+      end
+
+      it 'ignores client-supplied next_review_at when status changes' do
+        word = create(:word, wordbook: wordbook, status: 'easy', next_review_at: 10.days.from_now)
+        client_supplied = 99.days.from_now
+
+        freeze_time do
+          patch "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}",
+                params: { word: { status: 'hard', next_review_at: client_supplied } }, headers: headers
+
+          expect(response).to have_http_status(:ok)
+          returned = Time.zone.parse(response.parsed_body['next_review_at'])
+          expect(returned).not_to be_within(1.second).of(client_supplied)
+        end
+      end
+    end
+
+    context 'when status is unchanged' do
+      it 'accepts client-supplied next_review_at as-is' do
+        word = create(:word, wordbook: wordbook, status: 'easy', next_review_at: 5.days.from_now)
+        new_date = 20.days.from_now
+
+        patch "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}",
+              params: { word: { next_review_at: new_date } }, headers: headers
+
+        expect(response).to have_http_status(:ok)
+        expect(Time.zone.parse(response.parsed_body['next_review_at'])).to be_within(1.second).of(new_date)
+      end
     end
   end
 
