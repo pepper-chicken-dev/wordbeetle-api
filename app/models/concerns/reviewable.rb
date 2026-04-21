@@ -12,10 +12,8 @@ module Reviewable
 
     if status.to_sym == :not_studied
       self.next_review_at = nil
-    elsif next_review_at.nil? || status_was.to_sym == :not_studied
+    elsif next_review_at.nil? || status_was.to_sym == :not_studied || next_review_at <= Time.current
       self.next_review_at = Time.current + interval_for(status, setting)
-    elsif next_review_at <= Time.current
-      # already past (immediately reviewable) — keep as-is
     else
       adjustment = interval_for(status, setting) - interval_for(status_was, setting)
       self.next_review_at = next_review_at + adjustment

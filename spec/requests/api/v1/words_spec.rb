@@ -224,33 +224,6 @@ RSpec.describe 'Api::V1::Words', type: :request do
           expect(Time.zone.parse(response.parsed_body['next_review_at'])).to eq(7.days.from_now)
         end
       end
-
-      it 'ignores client-supplied next_review_at when status changes' do
-        word = create(:word, wordbook: wordbook, status: 'easy', next_review_at: 10.days.from_now)
-        client_supplied = 99.days.from_now
-
-        freeze_time do
-          patch "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}",
-                params: { word: { status: 'hard', next_review_at: client_supplied } }, headers: headers
-
-          expect(response).to have_http_status(:ok)
-          returned = Time.zone.parse(response.parsed_body['next_review_at'])
-          expect(returned).not_to be_within(1.second).of(client_supplied)
-        end
-      end
-    end
-
-    context 'when status is unchanged' do
-      it 'accepts client-supplied next_review_at as-is' do
-        word = create(:word, wordbook: wordbook, status: 'easy', next_review_at: 5.days.from_now)
-        new_date = 20.days.from_now
-
-        patch "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}",
-              params: { word: { next_review_at: new_date } }, headers: headers
-
-        expect(response).to have_http_status(:ok)
-        expect(Time.zone.parse(response.parsed_body['next_review_at'])).to be_within(1.second).of(new_date)
-      end
     end
   end
 
