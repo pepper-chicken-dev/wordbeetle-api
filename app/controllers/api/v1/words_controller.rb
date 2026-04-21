@@ -50,7 +50,7 @@ module Api
       end
 
       def word_params
-        params.expect(word: %i[spelling status next_review_at])
+        params.expect(word: %i[spelling status])
       end
     end
   end
