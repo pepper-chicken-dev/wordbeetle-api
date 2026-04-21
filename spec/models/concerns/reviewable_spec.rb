@@ -60,12 +60,13 @@ RSpec.describe Reviewable, type: :model do
     end
 
     context 'when next_review_at is in the past (immediately reviewable)' do
-      let(:past_date) { 2.days.ago }
-      let(:word) { create(:word, wordbook: wordbook, status: 'easy', next_review_at: past_date) }
+      let(:word) { create(:word, wordbook: wordbook, status: 'easy', next_review_at: 2.days.ago) }
 
-      it 'keeps next_review_at unchanged' do
-        word.update!(status: 'hard')
-        expect(word.reload.next_review_at).to be_within(1.second).of(past_date)
+      it 'sets next_review_at to now + new_interval' do
+        freeze_time do
+          word.update!(status: 'hard')
+          expect(word.next_review_at).to be_within(1.second).of(1.day.from_now)
+        end
       end
     end
 
