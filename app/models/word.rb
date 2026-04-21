@@ -1,4 +1,6 @@
 class Word < ApplicationRecord
+  include Reviewable
+
   belongs_to :wordbook
   has_many :meanings, dependent: :destroy
   has_many :examples, dependent: :destroy
