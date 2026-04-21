@@ -13,7 +13,7 @@ RSpec.describe Reviewable, type: :model do
       it 'does not recalculate next_review_at' do
         original = word.next_review_at
         word.update!(spelling: 'changed')
-        expect(word.next_review_at).to be_within(1.second).of(original)
+        expect(word.next_review_at).to eq(original)
       end
     end
 
@@ -32,7 +32,7 @@ RSpec.describe Reviewable, type: :model do
       it 'sets next_review_at to now + hard_interval' do
         freeze_time do
           word.update!(status: 'hard')
-          expect(word.next_review_at).to be_within(1.second).of(1.day.from_now)
+          expect(word.next_review_at).to eq(1.day.from_now)
         end
       end
     end
@@ -43,18 +43,7 @@ RSpec.describe Reviewable, type: :model do
       it 'sets next_review_at to now + easy_interval' do
         freeze_time do
           word.update!(status: 'easy')
-          expect(word.next_review_at).to be_within(1.second).of(7.days.from_now)
-        end
-      end
-    end
-
-    context 'when next_review_at is nil (easy word never reviewed)' do
-      let(:word) { create(:word, wordbook: wordbook, status: 'easy', next_review_at: nil) }
-
-      it 'sets next_review_at to now + new_interval' do
-        freeze_time do
-          word.update!(status: 'hard')
-          expect(word.next_review_at).to be_within(1.second).of(1.day.from_now)
+          expect(word.next_review_at).to eq(7.days.from_now)
         end
       end
     end
@@ -65,7 +54,7 @@ RSpec.describe Reviewable, type: :model do
       it 'sets next_review_at to now + new_interval' do
         freeze_time do
           word.update!(status: 'hard')
-          expect(word.next_review_at).to be_within(1.second).of(1.day.from_now)
+          expect(word.next_review_at).to eq(1.day.from_now)
         end
       end
     end
@@ -78,7 +67,7 @@ RSpec.describe Reviewable, type: :model do
         freeze_time do
           word.update!(status: 'hard')
           # easy_interval(7d) - hard_interval(1d) = 6d earlier
-          expect(word.next_review_at).to be_within(1.second).of(future_date - 6.days)
+          expect(word.next_review_at).to eq(future_date - 6.days)
         end
       end
     end
@@ -91,7 +80,7 @@ RSpec.describe Reviewable, type: :model do
         freeze_time do
           word.update!(status: 'easy')
           # hard_interval(1d) - easy_interval(7d) = -6d (later)
-          expect(word.next_review_at).to be_within(1.second).of(future_date + 6.days)
+          expect(word.next_review_at).to eq(future_date + 6.days)
         end
       end
     end
@@ -107,7 +96,7 @@ RSpec.describe Reviewable, type: :model do
         freeze_time do
           word.update!(status: 'hard')
           # easy_interval(10d) - hard_interval(2d) = 8d earlier
-          expect(word.next_review_at).to be_within(1.second).of(future_date - 8.days)
+          expect(word.next_review_at).to eq(future_date - 8.days)
         end
       end
     end

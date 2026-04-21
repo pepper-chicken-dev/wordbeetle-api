@@ -199,7 +199,7 @@ RSpec.describe 'Api::V1::Words', type: :request do
           expect(response).to have_http_status(:ok)
           # easy(7d) → hard(1d): 6 days earlier
           expected = 10.days.from_now - 6.days
-          expect(Time.zone.parse(response.parsed_body['next_review_at'])).to be_within(1.second).of(expected)
+          expect(Time.zone.parse(response.parsed_body['next_review_at'])).to eq(expected)
         end
       end
 
@@ -221,7 +221,7 @@ RSpec.describe 'Api::V1::Words', type: :request do
                 params: { word: { status: 'easy' } }, headers: headers
 
           expect(response).to have_http_status(:ok)
-          expect(Time.zone.parse(response.parsed_body['next_review_at'])).to be_within(1.second).of(7.days.from_now)
+          expect(Time.zone.parse(response.parsed_body['next_review_at'])).to eq(7.days.from_now)
         end
       end
     end
