@@ -156,8 +156,8 @@ RSpec.describe 'Api::V1::Words', type: :request do
           word: {
             spelling: 'apple', status: 'not_studied',
             meanings_attributes: [
-              { definition: 'a fruit', display_order: 1 },
-              { definition: 'a tech company', display_order: 2 }
+              { definition: 'りんご', display_order: 1 },
+              { definition: 'アップル社', display_order: 2 }
             ]
           }
         }
@@ -171,7 +171,7 @@ RSpec.describe 'Api::V1::Words', type: :request do
         expect(response).to have_http_status(:created)
         body = response.parsed_body
         expect(body['meanings'].size).to eq(2)
-        expect(body['meanings'].pluck('definition')).to eq(['a fruit', 'a tech company'])
+        expect(body['meanings'].pluck('definition')).to eq(%w[りんご アップル社])
       end
     end
 
@@ -204,7 +204,7 @@ RSpec.describe 'Api::V1::Words', type: :request do
         {
           word: {
             spelling: 'run', status: 'not_studied',
-            meanings_attributes: [{ definition: 'to move quickly', display_order: 1 }],
+            meanings_attributes: [{ definition: '走る', display_order: 1 }],
             examples_attributes: [
               { sentence: 'I run every morning.', translation: '毎朝走ります。', display_order: 1 }
             ]
