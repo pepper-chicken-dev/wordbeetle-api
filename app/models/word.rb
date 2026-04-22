@@ -6,6 +6,9 @@ class Word < ApplicationRecord
   has_many :examples, dependent: :destroy
   has_one :first_meaning, -> { order(:display_order) }, class_name: 'Meaning', dependent: nil, inverse_of: false
 
+  accepts_nested_attributes_for :meanings
+  accepts_nested_attributes_for :examples
+
   validates :spelling, presence: true
   validates :status, presence: true
 

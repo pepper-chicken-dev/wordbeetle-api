@@ -18,7 +18,7 @@ module Api
       def create
         word = @wordbook.words.new(word_params)
         word.save!
-        render json: WordResource.new(word).serialize, status: :created
+        render json: WordResource.new(word, params: { includes: %w[meanings examples] }).serialize, status: :created
       end
 
       def update
@@ -50,7 +50,11 @@ module Api
       end
 
       def word_params
-        params.expect(word: %i[spelling status])
+        params.expect(word: [
+                        :spelling, :status,
+                        { meanings_attributes: [%i[definition display_order]],
+                          examples_attributes: [%i[sentence translation display_order]] }
+                      ])
       end
     end
   end
