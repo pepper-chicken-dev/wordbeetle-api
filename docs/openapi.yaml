@@ -271,7 +271,11 @@ paths:
           $ref: "#/components/responses/NotFound"
     post:
       tags: [Words]
-      summary: Create a word in a wordbook
+      summary: Create a word with optional nested meanings and examples
+      description: |
+        Creates a word in the wordbook. Optionally accepts nested `meanings_attributes`
+        and `examples_attributes` to create related records in a single atomic transaction.
+        The response always includes `meanings` and `examples` arrays.
       security:
         - bearerAuth: []
       requestBody:
@@ -290,17 +294,39 @@ paths:
                       type: string
                     status:
                       $ref: "#/components/schemas/WordStatus"
-                    next_review_at:
-                      type: string
-                      format: date-time
-                      nullable: true
+                    meanings_attributes:
+                      type: array
+                      description: Optional nested meanings to create with the word
+                      items:
+                        type: object
+                        required: [definition, display_order]
+                        properties:
+                          definition:
+                            type: string
+                          display_order:
+                            type: integer
+                            minimum: 1
+                    examples_attributes:
+                      type: array
+                      description: Optional nested examples to create with the word
+                      items:
+                        type: object
+                        required: [sentence, translation, display_order]
+                        properties:
+                          sentence:
+                            type: string
+                          translation:
+                            type: string
+                          display_order:
+                            type: integer
+                            minimum: 1
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Word"
+                $ref: "#/components/schemas/WordWithRelations"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":

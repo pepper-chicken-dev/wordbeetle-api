@@ -136,14 +136,131 @@ RSpec.describe 'Api::V1::Words', type: :request do
 
   describe 'POST /api/v1/wordbooks/:wordbook_id/words' do
     context 'with valid params' do
-      it 'creates a word' do
+      it 'creates a word and returns meanings and examples in response' do
         expect do
           post "/api/v1/wordbooks/#{wordbook.id}/words",
                params: { word: { spelling: 'banana', status: 'not_studied' } }, headers: headers
         end.to change(Word, :count).by(1)
 
         expect(response).to have_http_status(:created)
-        expect(response.parsed_body['spelling']).to eq('banana')
+        body = response.parsed_body
+        expect(body['spelling']).to eq('banana')
+        expect(body['meanings']).to eq([])
+        expect(body['examples']).to eq([])
+      end
+    end
+
+    context 'with meanings_attributes' do
+      let(:params) do
+        {
+          word: {
+            spelling: 'apple', status: 'not_studied',
+            meanings_attributes: [
+              { definition: 'りんご', display_order: 1 },
+              { definition: 'アップル社', display_order: 2 }
+            ]
+          }
+        }
+      end
+
+      it 'creates a word with meanings in a single request' do
+        expect do
+          post "/api/v1/wordbooks/#{wordbook.id}/words", params: params, headers: headers
+        end.to change(Word, :count).by(1).and change(Meaning, :count).by(2)
+
+        expect(response).to have_http_status(:created)
+        body = response.parsed_body
+        expect(body['meanings'].size).to eq(2)
+        expect(body['meanings'].pluck('definition')).to eq(%w[りんご アップル社])
+      end
+    end
+
+    context 'with examples_attributes' do
+      let(:params) do
+        {
+          word: {
+            spelling: 'hello', status: 'not_studied',
+            examples_attributes: [
+              { sentence: 'Hello, world!', translation: 'こんにちは、世界！', display_order: 1 }
+            ]
+          }
+        }
+      end
+
+      it 'creates a word with examples in a single request' do
+        expect do
+          post "/api/v1/wordbooks/#{wordbook.id}/words", params: params, headers: headers
+        end.to change(Word, :count).by(1).and change(Example, :count).by(1)
+
+        expect(response).to have_http_status(:created)
+        body = response.parsed_body
+        expect(body['examples'].size).to eq(1)
+        expect(body['examples'].first['sentence']).to eq('Hello, world!')
+      end
+    end
+
+    context 'with both meanings_attributes and examples_attributes' do
+      let(:params) do
+        {
+          word: {
+            spelling: 'run', status: 'not_studied',
+            meanings_attributes: [{ definition: '走る', display_order: 1 }],
+            examples_attributes: [
+              { sentence: 'I run every morning.', translation: '毎朝走ります。', display_order: 1 }
+            ]
+          }
+        }
+      end
+
+      it 'creates a word with meanings and examples atomically' do
+        expect do
+          post "/api/v1/wordbooks/#{wordbook.id}/words", params: params, headers: headers
+        end.to change(Word, :count).by(1)
+                                   .and change(Meaning, :count).by(1)
+                                                               .and change(Example, :count).by(1)
+
+        expect(response).to have_http_status(:created)
+        body = response.parsed_body
+        expect(body['meanings'].size).to eq(1)
+        expect(body['examples'].size).to eq(1)
+      end
+    end
+
+    context 'with invalid nested attributes' do
+      it 'does not create any records when meaning validation fails' do
+        params = {
+          word: {
+            spelling: 'apple',
+            status: 'not_studied',
+            meanings_attributes: [{ definition: '', display_order: 1 }]
+          }
+        }
+
+        word_count = Word.count
+        meaning_count = Meaning.count
+        post "/api/v1/wordbooks/#{wordbook.id}/words", params: params, headers: headers
+
+        expect(Word.count).to eq(word_count)
+        expect(Meaning.count).to eq(meaning_count)
+        expect(response).to have_http_status(:unprocessable_content)
+      end
+
+      it 'does not create any records when example validation fails' do
+        params = {
+          word: {
+            spelling: 'apple',
+            status: 'not_studied',
+            examples_attributes: [{ sentence: '', translation: 'trans', display_order: 1 }]
+          }
+        }
+
+        word_count = Word.count
+        example_count = Example.count
+        post "/api/v1/wordbooks/#{wordbook.id}/words", params: params, headers: headers
+
+        expect(Word.count).to eq(word_count)
+        expect(Example.count).to eq(example_count)
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
 

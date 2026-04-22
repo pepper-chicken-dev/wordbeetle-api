@@ -6,6 +6,8 @@ RSpec.describe Word, type: :model do
     it { is_expected.to have_many(:meanings).dependent(:destroy) }
     it { is_expected.to have_many(:examples).dependent(:destroy) }
     it { is_expected.to have_one(:first_meaning).class_name('Meaning') }
+    it { is_expected.to accept_nested_attributes_for(:meanings) }
+    it { is_expected.to accept_nested_attributes_for(:examples) }
   end
 
   describe 'validations' do
