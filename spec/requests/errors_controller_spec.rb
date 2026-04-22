@@ -29,9 +29,9 @@ RSpec.describe 'ErrorsController', type: :request do
     end
 
     it 'returns conflict for ActiveRecord::RecordNotUnique' do
-      allow(Wordbook).to receive(:new).and_raise(ActiveRecord::RecordNotUnique.new('Duplicate entry'))
+      allow(User).to receive(:create!).and_raise(ActiveRecord::RecordNotUnique.new('Duplicate entry'))
 
-      post '/api/v1/wordbooks', params: { wordbook: { title: 'Test' } }, headers: headers
+      post '/api/v1/auth/guest'
 
       expect(response).to have_http_status(:conflict)
       expect(response.parsed_body['error']).to eq('Duplicate record')
