@@ -139,12 +139,13 @@ RSpec.describe 'Api::V1::Words', type: :request do
       it 'creates a word and returns meanings and examples in response' do
         expect do
           post "/api/v1/wordbooks/#{wordbook.id}/words",
-               params: { word: { spelling: 'banana', status: 'not_studied' } }, headers: headers
+               params: { word: { spelling: 'banana' } }, headers: headers
         end.to change(Word, :count).by(1)
 
         expect(response).to have_http_status(:created)
         body = response.parsed_body
         expect(body['spelling']).to eq('banana')
+        expect(body['status']).to eq('not_studied')
         expect(body['meanings']).to eq([])
         expect(body['examples']).to eq([])
       end
@@ -154,7 +155,7 @@ RSpec.describe 'Api::V1::Words', type: :request do
       let(:params) do
         {
           word: {
-            spelling: 'apple', status: 'not_studied',
+            spelling: 'apple',
             meanings_attributes: [
               { definition: 'りんご', display_order: 1 },
               { definition: 'アップル社', display_order: 2 }
@@ -179,7 +180,7 @@ RSpec.describe 'Api::V1::Words', type: :request do
       let(:params) do
         {
           word: {
-            spelling: 'hello', status: 'not_studied',
+            spelling: 'hello',
             examples_attributes: [
               { sentence: 'Hello, world!', translation: 'こんにちは、世界！', display_order: 1 }
             ]
@@ -203,7 +204,7 @@ RSpec.describe 'Api::V1::Words', type: :request do
       let(:params) do
         {
           word: {
-            spelling: 'run', status: 'not_studied',
+            spelling: 'run',
             meanings_attributes: [{ definition: '走る', display_order: 1 }],
             examples_attributes: [
               { sentence: 'I run every morning.', translation: '毎朝走ります。', display_order: 1 }
@@ -231,7 +232,6 @@ RSpec.describe 'Api::V1::Words', type: :request do
         params = {
           word: {
             spelling: 'apple',
-            status: 'not_studied',
             meanings_attributes: [{ definition: '', display_order: 1 }]
           }
         }
@@ -249,7 +249,6 @@ RSpec.describe 'Api::V1::Words', type: :request do
         params = {
           word: {
             spelling: 'apple',
-            status: 'not_studied',
             examples_attributes: [{ sentence: '', translation: 'trans', display_order: 1 }]
           }
         }
@@ -264,9 +263,17 @@ RSpec.describe 'Api::V1::Words', type: :request do
       end
     end
 
+    it 'ignores status parameter and always sets not_studied' do
+      post "/api/v1/wordbooks/#{wordbook.id}/words",
+           params: { word: { spelling: 'banana', status: 'easy' } }, headers: headers
+
+      expect(response).to have_http_status(:created)
+      expect(response.parsed_body['status']).to eq('not_studied')
+    end
+
     context 'with invalid params' do
       it 'returns unprocessable_content' do
-        post "/api/v1/wordbooks/#{wordbook.id}/words", params: { word: { spelling: '', status: 'not_studied' } },
+        post "/api/v1/wordbooks/#{wordbook.id}/words", params: { word: { spelling: '' } },
                                                        headers: headers
 
         expect(response).to have_http_status(:unprocessable_content)
@@ -278,7 +285,7 @@ RSpec.describe 'Api::V1::Words', type: :request do
       other_wordbook = create(:wordbook)
 
       post "/api/v1/wordbooks/#{other_wordbook.id}/words",
-           params: { word: { spelling: 'test', status: 'not_studied' } }, headers: headers
+           params: { word: { spelling: 'test' } }, headers: headers
 
       expect(response).to have_http_status(:not_found)
     end
