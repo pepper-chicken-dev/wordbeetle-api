@@ -16,13 +16,13 @@ module Api
       end
 
       def create
-        word = @wordbook.words.new(word_params)
+        word = @wordbook.words.new(create_word_params)
         word.save!
         render json: WordResource.new(word, params: { includes: %w[meanings examples] }).serialize, status: :created
       end
 
       def update
-        @word.update!(word_params)
+        @word.update!(update_word_params)
         render json: WordResource.new(@word).serialize
       end
 
@@ -49,7 +49,15 @@ module Api
         params[:include].split(',').map(&:strip).select { |i| ALLOWED_INCLUDES.include?(i) }
       end
 
-      def word_params
+      def create_word_params
+        params.expect(word: [
+                        :spelling,
+                        { meanings_attributes: [%i[definition display_order]],
+                          examples_attributes: [%i[sentence translation display_order]] }
+                      ])
+      end
+
+      def update_word_params
         params.expect(word: [
                         :spelling, :status,
                         { meanings_attributes: [%i[definition display_order]],
