@@ -40,4 +40,8 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Raise an error when parameters are sent outside of the permitted list.
+  # Ensures tests catch typos and unexpected keys in request payloads.
+  config.action_controller.action_on_unpermitted_parameters = :raise
 end
