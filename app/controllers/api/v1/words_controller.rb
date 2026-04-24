@@ -10,9 +10,7 @@ module Api
       end
 
       def show
-        includes = parse_includes
-        @word = @wordbook.words.includes(*includes.map(&:to_sym)).find(params[:id]) if includes.any?
-        render json: WordResource.new(@word, params: { includes: includes }).serialize
+        render json: WordResource.new(@word, params: { includes: parse_includes }).serialize
       end
 
       def create
@@ -40,7 +38,10 @@ module Api
       end
 
       def set_word
-        @word = @wordbook.words.find(params[:id])
+        includes = parse_includes
+        scope = @wordbook.words
+        scope = scope.includes(*includes.map(&:to_sym)) if includes.any?
+        @word = scope.find(params[:id])
       end
 
       def parse_includes
