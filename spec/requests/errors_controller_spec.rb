@@ -84,7 +84,7 @@ RSpec.describe 'ErrorsController', type: :request do
 
         get '/422', env: { 'action_dispatch.exception' => exception }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expect(response.parsed_body['error']).to eq('Unprocessable entity')
         expect(Rails.logger).to have_received(:warn).with(
           a_string_matching(%r{Client error: 422 GET /422 - ActiveRecord::RecordInvalid:})
