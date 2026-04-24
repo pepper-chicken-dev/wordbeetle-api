@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_23_130948) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_24_122013) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -22,6 +22,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_23_130948) do
     t.datetime "updated_at", null: false
     t.bigint "word_id", null: false
     t.index ["word_id"], name: "index_examples_on_word_id"
+    t.check_constraint "char_length(sentence) <= 1000", name: "check_examples_sentence_length"
+    t.check_constraint "char_length(translation) <= 1000", name: "check_examples_translation_length"
   end
 
   create_table "meanings", force: :cascade do |t|
@@ -31,6 +33,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_23_130948) do
     t.datetime "updated_at", null: false
     t.bigint "word_id", null: false
     t.index ["word_id"], name: "index_meanings_on_word_id"
+    t.check_constraint "char_length(definition) <= 1000", name: "check_meanings_definition_length"
   end
 
   create_table "settings", force: :cascade do |t|
@@ -67,6 +70,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_23_130948) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_wordbooks_on_user_id"
+    t.check_constraint "char_length(title::text) <= 255", name: "check_wordbooks_title_length"
   end
 
   create_table "words", force: :cascade do |t|
@@ -77,6 +81,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_23_130948) do
     t.datetime "updated_at", null: false
     t.bigint "wordbook_id", null: false
     t.index ["wordbook_id"], name: "index_words_on_wordbook_id"
+    t.check_constraint "char_length(spelling::text) <= 255", name: "check_words_spelling_length"
     t.check_constraint "status::text = ANY (ARRAY['not_studied'::character varying, 'hard'::character varying, 'uncertain'::character varying, 'easy'::character varying]::text[])", name: "check_words_status_values"
   end
 
