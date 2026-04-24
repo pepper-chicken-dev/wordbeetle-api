@@ -49,7 +49,7 @@ module WordbeetleApi
       'AuthenticationError' => :unauthorized,
       'BadRequestError' => :bad_request,
       'ConflictError' => :conflict,
-      'UnprocessableEntityError' => :unprocessable_entity
+      'UnprocessableEntityError' => :unprocessable_content
     )
   end
 end
