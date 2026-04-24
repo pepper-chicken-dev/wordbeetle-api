@@ -7,7 +7,9 @@ RSpec.describe Example, type: :model do
 
   describe 'validations' do
     it { is_expected.to validate_presence_of(:sentence) }
+    it { is_expected.to validate_length_of(:sentence).is_at_most(1000) }
     it { is_expected.to validate_presence_of(:translation) }
+    it { is_expected.to validate_length_of(:translation).is_at_most(1000) }
     it { is_expected.to validate_presence_of(:display_order) }
     it { is_expected.to validate_numericality_of(:display_order).only_integer.is_greater_than(0) }
   end

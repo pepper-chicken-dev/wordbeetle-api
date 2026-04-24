@@ -12,6 +12,7 @@ RSpec.describe Word, type: :model do
 
   describe 'validations' do
     it { is_expected.to validate_presence_of(:spelling) }
+    it { is_expected.to validate_length_of(:spelling).is_at_most(255) }
     it { is_expected.to validate_presence_of(:status) }
   end
 
