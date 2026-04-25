@@ -3,11 +3,10 @@ class Word < ApplicationRecord
 
   belongs_to :wordbook
   has_many :meanings, dependent: :destroy
-  has_many :examples, dependent: :destroy
+  has_many :examples, through: :meanings
   has_one :first_meaning, -> { order(:display_order) }, class_name: 'Meaning', dependent: nil, inverse_of: false
 
   accepts_nested_attributes_for :meanings
-  accepts_nested_attributes_for :examples
 
   validates :spelling, presence: true, length: { maximum: 255 }
   validates :status, presence: true

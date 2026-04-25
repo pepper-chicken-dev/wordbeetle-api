@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :example do
-    association :word
+    association :meaning
     sentence { 'Hello, world!' }
     translation { 'こんにちは、世界！' }
     sequence(:display_order) { |n| n }

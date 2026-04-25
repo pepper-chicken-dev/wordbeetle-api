@@ -3,6 +3,8 @@ require 'rails_helper'
 RSpec.describe Meaning, type: :model do
   describe 'associations' do
     it { is_expected.to belong_to(:word) }
+    it { is_expected.to have_many(:examples).dependent(:destroy) }
+    it { is_expected.to accept_nested_attributes_for(:examples) }
   end
 
   describe 'validations' do

@@ -1,5 +1,5 @@
 class Example < ApplicationRecord
-  belongs_to :word
+  belongs_to :meaning
 
   validates :sentence, presence: true, length: { maximum: 1000 }
   validates :translation, presence: true, length: { maximum: 1000 }
