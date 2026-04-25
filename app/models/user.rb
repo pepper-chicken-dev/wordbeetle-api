@@ -21,7 +21,7 @@ class User < ApplicationRecord
   validates :provider_uid, presence: true, uniqueness: { scope: :provider }, unless: :guest?
   validates :guest_expires_at, presence: true, if: :guest?
 
-  enum :provider, { google: 'google', guest: 'guest' }
+  enum :provider, google: 'google', guest: 'guest'
 
   def self.find_by_token(token)
     payload = JsonWebToken.decode(token)

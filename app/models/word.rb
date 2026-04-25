@@ -11,7 +11,7 @@ class Word < ApplicationRecord
   validates :spelling, presence: true, length: { maximum: 255 }
   validates :status, presence: true
 
-  enum :status, { not_studied: 'not_studied', hard: 'hard', uncertain: 'uncertain', easy: 'easy' }
+  enum :status, not_studied: 'not_studied', hard: 'hard', uncertain: 'uncertain', easy: 'easy'
 
   scope :reviewable, -> { where('next_review_at IS NULL OR next_review_at <= ?', Time.current) }
 end
