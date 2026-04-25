@@ -33,7 +33,7 @@ entity "words" as words {
   *wordbook_id : bigint <<FK>>
   *spelling : string
   *status : string
-  next_review_date : date
+  next_review_at : datetime
   created_at : datetime
   updated_at : datetime
 }
@@ -63,9 +63,9 @@ entity "settings" as settings {
   *id : bigint <<PK>>
   --
   *user_id : bigint <<FK>>
-  *hard_interval_days : integer
-  *uncertain_interval_days : integer
-  *easy_interval_days : integer
+  *hard_interval : interval
+  *uncertain_interval : interval
+  *easy_interval : interval
   created_at : datetime
   updated_at : datetime
 }
