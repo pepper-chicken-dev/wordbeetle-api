@@ -193,7 +193,7 @@ RSpec cop のデフォルト閾値は非常に厳しいため、実用的な範�
 #### Rails/InverseOf
 
 - **内容**: カスタムクラス名やスコープを持つアソシエーションに `:inverse_of` を指定する
-- **対応**: `has_one :first_meaning` に `inverse_of: false` を追加（対称的な逆アソシエーションを持たないスコープ付きアソシエーション）
+- **対応**: `has_one :first_meaning` に `inverse_of: :word` を指定。`Meaning#belongs_to :word` は無スコープなので逆方向の指定は安全で、`word.first_meaning.word` が再クエリせずロード済みの `word` を返せる。
 
 #### Rails/SkipsModelValidations
 

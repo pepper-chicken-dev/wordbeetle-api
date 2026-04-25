@@ -4,7 +4,7 @@ class Word < ApplicationRecord
   belongs_to :wordbook
   has_many :meanings, dependent: :destroy
   has_many :examples, through: :meanings
-  has_one :first_meaning, -> { order(:display_order) }, class_name: 'Meaning', dependent: nil, inverse_of: false
+  has_one :first_meaning, -> { order(:display_order) }, class_name: 'Meaning', dependent: nil, inverse_of: :word
 
   accepts_nested_attributes_for :meanings
 
