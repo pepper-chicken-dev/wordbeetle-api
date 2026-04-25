@@ -4,7 +4,7 @@ module Api
       class WordsController < ApplicationController
         def index
           wordbook = current_user.wordbooks.find(params[:wordbook_id])
-          words = wordbook.words.reviewable.includes(:meanings, :examples)
+          words = wordbook.words.reviewable.includes(meanings: :examples)
 
           render json: {
             wordbook: WordbookResource.new(wordbook).serializable_hash,

@@ -18,8 +18,9 @@ Rails.application.routes.draw do
           resources :words, only: [:index]
         end
         resources :words do
-          resources :meanings
-          resources :examples
+          resources :meanings do
+            resources :examples
+          end
         end
       end
       resource :setting, only: %i[show create update destroy]

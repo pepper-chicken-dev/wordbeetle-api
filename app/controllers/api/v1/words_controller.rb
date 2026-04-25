@@ -40,7 +40,11 @@ module Api
       def set_word
         includes = parse_includes
         scope = @wordbook.words
-        scope = scope.includes(*includes.map(&:to_sym)) if includes.any?
+        if includes.include?('examples')
+          scope = scope.includes(meanings: :examples)
+        elsif includes.include?('meanings')
+          scope = scope.includes(:meanings)
+        end
         @word = scope.find(params[:id])
       end
 
@@ -53,16 +57,16 @@ module Api
       def create_word_params
         params.expect(word: [
                         :spelling,
-                        { meanings_attributes: [%i[definition display_order]],
-                          examples_attributes: [%i[sentence translation display_order]] }
+                        { meanings_attributes: [[:definition, :display_order,
+                                                 { examples_attributes: [%i[sentence translation display_order]] }]] }
                       ])
       end
 
       def update_word_params
         params.expect(word: [
                         :spelling, :status,
-                        { meanings_attributes: [%i[definition display_order]],
-                          examples_attributes: [%i[sentence translation display_order]] }
+                        { meanings_attributes: [[:definition, :display_order,
+                                                 { examples_attributes: [%i[sentence translation display_order]] }]] }
                       ])
       end
     end

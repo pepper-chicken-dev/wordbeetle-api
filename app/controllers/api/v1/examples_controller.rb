@@ -1,11 +1,11 @@
 module Api
   module V1
     class ExamplesController < ApplicationController
-      before_action :set_word
+      before_action :set_meaning
       before_action :set_example, only: %i[show update destroy]
 
       def index
-        examples = @word.examples
+        examples = @meaning.examples
         render_paginated(examples, ExampleResource)
       end
 
@@ -14,7 +14,7 @@ module Api
       end
 
       def create
-        example = @word.examples.new(example_params)
+        example = @meaning.examples.new(example_params)
         example.save!
         render json: ExampleResource.new(example).serialize, status: :created
       end
@@ -31,12 +31,13 @@ module Api
 
       private
 
-      def set_word
-        @word = current_user.wordbooks.find(params[:wordbook_id]).words.find(params[:word_id])
+      def set_meaning
+        word = current_user.wordbooks.find(params[:wordbook_id]).words.find(params[:word_id])
+        @meaning = word.meanings.find(params[:meaning_id])
       end
 
       def set_example
-        @example = @word.examples.find(params[:id])
+        @example = @meaning.examples.find(params[:id])
       end
 
       def example_params
