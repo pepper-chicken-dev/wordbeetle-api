@@ -274,8 +274,9 @@ paths:
       summary: Create a word with optional nested meanings and examples
       description: |
         Creates a word in the wordbook. Optionally accepts nested `meanings_attributes`
-        and `examples_attributes` to create related records in a single atomic transaction.
-        The response always includes `meanings` and `examples` arrays.
+        (with `examples_attributes` inside each meaning) to create related records in a
+        single atomic transaction. The response always includes `meanings` array with
+        nested `examples`.
       security:
         - bearerAuth: []
       requestBody:
@@ -306,20 +307,20 @@ paths:
                           display_order:
                             type: integer
                             minimum: 1
-                    examples_attributes:
-                      type: array
-                      description: Optional nested examples to create with the word
-                      items:
-                        type: object
-                        required: [sentence, translation, display_order]
-                        properties:
-                          sentence:
-                            type: string
-                          translation:
-                            type: string
-                          display_order:
-                            type: integer
-                            minimum: 1
+                          examples_attributes:
+                            type: array
+                            description: Optional nested examples to create with the meaning
+                            items:
+                              type: object
+                              required: [sentence, translation, display_order]
+                              properties:
+                                sentence:
+                                  type: string
+                                translation:
+                                  type: string
+                                display_order:
+                                  type: integer
+                                  minimum: 1
       responses:
         "201":
           description: Created
@@ -356,7 +357,9 @@ paths:
         - name: include
           in: query
           required: false
-          description: "Comma-separated list of relations to include. Allowed values: meanings, examples."
+          description: |
+            Comma-separated list of relations to include. Allowed values: meanings, examples.
+            When examples is specified, meanings are automatically included with nested examples.
           schema:
             type: string
             example: meanings,examples
@@ -599,13 +602,14 @@ paths:
           $ref: "#/components/responses/NotFound"
 
   # ──────────────── Examples ────────────────
-  /api/v1/wordbooks/{wordbook_id}/words/{word_id}/examples:
+  /api/v1/wordbooks/{wordbook_id}/words/{word_id}/meanings/{meaning_id}/examples:
     parameters:
       - $ref: "#/components/parameters/WordbookId"
       - $ref: "#/components/parameters/WordId"
+      - $ref: "#/components/parameters/MeaningId"
     get:
       tags: [Examples]
-      summary: List examples for a word
+      summary: List examples for a meaning
       security:
         - bearerAuth: []
       parameters:
@@ -631,7 +635,7 @@ paths:
           $ref: "#/components/responses/NotFound"
     post:
       tags: [Examples]
-      summary: Create an example for a word
+      summary: Create an example for a meaning
       security:
         - bearerAuth: []
       requestBody:
@@ -673,10 +677,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/ValidationErrors"
 
-  /api/v1/wordbooks/{wordbook_id}/words/{word_id}/examples/{id}:
+  /api/v1/wordbooks/{wordbook_id}/words/{word_id}/meanings/{meaning_id}/examples/{id}:
     parameters:
       - $ref: "#/components/parameters/WordbookId"
       - $ref: "#/components/parameters/WordId"
+      - $ref: "#/components/parameters/MeaningId"
       - $ref: "#/components/parameters/Id"
     get:
       tags: [Examples]
@@ -892,6 +897,12 @@ components:
       required: true
       schema:
         type: integer
+    MeaningId:
+      name: meaning_id
+      in: path
+      required: true
+      schema:
+        type: integer
     Page:
       name: page
       in: query
@@ -1023,14 +1034,9 @@ components:
           properties:
             meanings:
               type: array
-              description: Present only when include=meanings is specified
+              description: Present when include=meanings or include=examples is specified
               items:
-                $ref: "#/components/schemas/Meaning"
-            examples:
-              type: array
-              description: Present only when include=examples is specified
-              items:
-                $ref: "#/components/schemas/Example"
+                $ref: "#/components/schemas/MeaningWithExamples"
 
     TestWordsResponse:
       type: object
@@ -1052,11 +1058,7 @@ components:
                   meanings:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Meaning"
-                  examples:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Example"
+                      $ref: "#/components/schemas/MeaningWithExamples"
 
     WordStatus:
       type: string
@@ -1081,12 +1083,23 @@ components:
           type: string
           format: date-time
 
+    MeaningWithExamples:
+      allOf:
+        - $ref: "#/components/schemas/Meaning"
+        - type: object
+          properties:
+            examples:
+              type: array
+              description: Present when include=examples is specified
+              items:
+                $ref: "#/components/schemas/Example"
+
     Example:
       type: object
       properties:
         id:
           type: integer
-        word_id:
+        meaning_id:
           type: integer
         sentence:
           type: string
