@@ -10,18 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_24_122013) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_25_105635) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "examples", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "display_order", null: false
+    t.bigint "meaning_id", null: false
     t.text "sentence", null: false
     t.text "translation", null: false
     t.datetime "updated_at", null: false
-    t.bigint "word_id", null: false
-    t.index ["word_id"], name: "index_examples_on_word_id"
+    t.index ["meaning_id"], name: "index_examples_on_meaning_id"
     t.check_constraint "char_length(sentence) <= 1000", name: "check_examples_sentence_length"
     t.check_constraint "char_length(translation) <= 1000", name: "check_examples_translation_length"
   end
@@ -85,7 +85,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_24_122013) do
     t.check_constraint "status::text = ANY (ARRAY['not_studied'::character varying, 'hard'::character varying, 'uncertain'::character varying, 'easy'::character varying]::text[])", name: "check_words_status_values"
   end
 
-  add_foreign_key "examples", "words"
+  add_foreign_key "examples", "meanings"
   add_foreign_key "meanings", "words"
   add_foreign_key "settings", "users"
   add_foreign_key "wordbooks", "users"

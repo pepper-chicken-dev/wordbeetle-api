@@ -43,8 +43,8 @@ RSpec.describe CleanupExpiredGuestsJob, type: :job do
         expired_guest = create(:user, :guest, guest_expires_at: 1.day.ago)
         wordbook = create(:wordbook, user: expired_guest)
         word = create(:word, wordbook: wordbook)
-        create(:meaning, word: word)
-        create(:example, word: word)
+        meaning = create(:meaning, word: word)
+        create(:example, meaning: meaning)
         create(:setting, user: expired_guest)
 
         described_class.perform_now
@@ -53,7 +53,7 @@ RSpec.describe CleanupExpiredGuestsJob, type: :job do
         expect(Wordbook.exists?(wordbook.id)).to be false
         expect(Word.exists?(word.id)).to be false
         expect(Meaning.where(word_id: word.id)).to be_empty
-        expect(Example.where(word_id: word.id)).to be_empty
+        expect(Example.where(meaning_id: meaning.id)).to be_empty
       end
     end
   end

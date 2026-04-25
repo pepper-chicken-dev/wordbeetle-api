@@ -77,45 +77,48 @@ RSpec.describe 'Api::V1::Words', type: :request do
 
     context 'with include parameter' do
       let(:word) { create(:word, wordbook: wordbook) }
+      let(:secondary_meaning) { create(:meaning, word: word, definition: 'meaning1', display_order: 2) }
+      let(:primary_meaning) { create(:meaning, word: word, definition: 'meaning2', display_order: 1) }
 
       before do
-        create(:meaning, word: word, definition: 'meaning1', display_order: 2)
-        create(:meaning, word: word, definition: 'meaning2', display_order: 1)
-        create(:example, word: word, sentence: 'Example1', display_order: 2)
-        create(:example, word: word, sentence: 'Example2', display_order: 1)
+        create(:example, meaning: secondary_meaning, sentence: 'Example1', display_order: 2)
+        create(:example, meaning: primary_meaning, sentence: 'Example2', display_order: 1)
       end
 
       it 'includes meanings when include=meanings' do
-        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}?include=meanings", headers: headers
+        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}?include=meanings",
+            headers: headers
 
         expect(response).to have_http_status(:ok)
         body = response.parsed_body
         expect(body['meanings'].size).to eq(2)
         expect(body['meanings'].pluck('definition')).to eq(%w[meaning2 meaning1])
-        expect(body).not_to have_key('examples')
+        expect(body['meanings'].first).not_to have_key('examples')
       end
 
-      it 'includes examples when include=examples' do
-        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}?include=examples", headers: headers
-
-        expect(response).to have_http_status(:ok)
-        body = response.parsed_body
-        expect(body['examples'].size).to eq(2)
-        expect(body['examples'].pluck('sentence')).to eq(%w[Example2 Example1])
-        expect(body).not_to have_key('meanings')
-      end
-
-      it 'includes both when include=meanings,examples' do
-        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}?include=meanings,examples", headers: headers
+      it 'includes examples nested in meanings when include=examples' do
+        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}?include=examples",
+            headers: headers
 
         expect(response).to have_http_status(:ok)
         body = response.parsed_body
         expect(body['meanings'].size).to eq(2)
-        expect(body['examples'].size).to eq(2)
+        expect(body['meanings'].first['examples'].size).to eq(1)
+      end
+
+      it 'includes meanings with examples when include=meanings,examples' do
+        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}?include=meanings,examples",
+            headers: headers
+
+        expect(response).to have_http_status(:ok)
+        body = response.parsed_body
+        expect(body['meanings'].size).to eq(2)
+        expect(body['meanings'].first['examples'].size).to eq(1)
       end
 
       it 'ignores invalid include values' do
-        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}?include=wordbook,invalid", headers: headers
+        get "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}?include=wordbook,invalid",
+            headers: headers
 
         expect(response).to have_http_status(:ok)
         body = response.parsed_body
@@ -129,14 +132,13 @@ RSpec.describe 'Api::V1::Words', type: :request do
         expect(response).to have_http_status(:ok)
         body = response.parsed_body
         expect(body).not_to have_key('meanings')
-        expect(body).not_to have_key('examples')
       end
     end
   end
 
   describe 'POST /api/v1/wordbooks/:wordbook_id/words' do
     context 'with valid params' do
-      it 'creates a word and returns meanings and examples in response' do
+      it 'creates a word and returns meanings in response' do
         expect do
           post "/api/v1/wordbooks/#{wordbook.id}/words",
                params: { word: { spelling: 'banana' } }, headers: headers
@@ -147,7 +149,6 @@ RSpec.describe 'Api::V1::Words', type: :request do
         expect(body['spelling']).to eq('banana')
         expect(body['status']).to eq('not_studied')
         expect(body['meanings']).to eq([])
-        expect(body['examples']).to eq([])
       end
     end
 
@@ -176,38 +177,18 @@ RSpec.describe 'Api::V1::Words', type: :request do
       end
     end
 
-    context 'with examples_attributes' do
-      let(:params) do
-        {
-          word: {
-            spelling: 'hello',
-            examples_attributes: [
-              { sentence: 'Hello, world!', translation: 'こんにちは、世界！', display_order: 1 }
-            ]
-          }
-        }
-      end
-
-      it 'creates a word with examples in a single request' do
-        expect do
-          post "/api/v1/wordbooks/#{wordbook.id}/words", params: params, headers: headers
-        end.to change(Word, :count).by(1).and change(Example, :count).by(1)
-
-        expect(response).to have_http_status(:created)
-        body = response.parsed_body
-        expect(body['examples'].size).to eq(1)
-        expect(body['examples'].first['sentence']).to eq('Hello, world!')
-      end
-    end
-
-    context 'with both meanings_attributes and examples_attributes' do
+    context 'with meanings_attributes containing examples_attributes' do
       let(:params) do
         {
           word: {
             spelling: 'run',
-            meanings_attributes: [{ definition: '走る', display_order: 1 }],
-            examples_attributes: [
-              { sentence: 'I run every morning.', translation: '毎朝走ります。', display_order: 1 }
+            meanings_attributes: [
+              {
+                definition: '走る', display_order: 1,
+                examples_attributes: [
+                  { sentence: 'I run every morning.', translation: '毎朝走ります。', display_order: 1 }
+                ]
+              }
             ]
           }
         }
@@ -223,7 +204,8 @@ RSpec.describe 'Api::V1::Words', type: :request do
         expect(response).to have_http_status(:created)
         body = response.parsed_body
         expect(body['meanings'].size).to eq(1)
-        expect(body['examples'].size).to eq(1)
+        expect(body['meanings'].first['examples'].size).to eq(1)
+        expect(body['meanings'].first['examples'].first['sentence']).to eq('I run every morning.')
       end
     end
 
@@ -249,7 +231,10 @@ RSpec.describe 'Api::V1::Words', type: :request do
         params = {
           word: {
             spelling: 'apple',
-            examples_attributes: [{ sentence: '', translation: 'trans', display_order: 1 }]
+            meanings_attributes: [
+              { definition: 'りんご', display_order: 1,
+                examples_attributes: [{ sentence: '', translation: 'trans', display_order: 1 }] }
+            ]
           }
         }
 
