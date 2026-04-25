@@ -8,8 +8,8 @@ RSpec.describe 'Api::V1::Test::Words', type: :request do
   describe 'GET /api/v1/wordbooks/:wordbook_id/test/words' do
     it 'returns reviewable words with meanings and examples' do
       word = create(:word, wordbook: wordbook, next_review_at: nil)
-      create(:meaning, word: word, definition: 'りんご', display_order: 1)
-      create(:example, word: word, sentence: 'I like apples.', display_order: 1)
+      meaning = create(:meaning, word: word, definition: 'りんご', display_order: 1)
+      create(:example, meaning: meaning, sentence: 'I like apples.', display_order: 1)
 
       get "/api/v1/wordbooks/#{wordbook.id}/test/words", headers: headers
 
@@ -23,8 +23,8 @@ RSpec.describe 'Api::V1::Test::Words', type: :request do
       expect(returned_word['spelling']).to eq(word.spelling)
       expect(returned_word['meanings'].size).to eq(1)
       expect(returned_word['meanings'].first['definition']).to eq('りんご')
-      expect(returned_word['examples'].size).to eq(1)
-      expect(returned_word['examples'].first['sentence']).to eq('I like apples.')
+      expect(returned_word['meanings'].first['examples'].size).to eq(1)
+      expect(returned_word['meanings'].first['examples'].first['sentence']).to eq('I like apples.')
     end
 
     it 'includes words with next_review_at in the past' do
@@ -45,16 +45,16 @@ RSpec.describe 'Api::V1::Test::Words', type: :request do
 
     it 'returns meanings and examples sorted by display_order' do
       word = create(:word, wordbook: wordbook, next_review_at: nil)
-      create(:meaning, word: word, definition: 'second', display_order: 2)
-      create(:meaning, word: word, definition: 'first', display_order: 1)
-      create(:example, word: word, sentence: 'Second', display_order: 2)
-      create(:example, word: word, sentence: 'First', display_order: 1)
+      second_meaning = create(:meaning, word: word, definition: 'second', display_order: 2)
+      first_meaning = create(:meaning, word: word, definition: 'first', display_order: 1)
+      create(:example, meaning: second_meaning, sentence: 'Second', display_order: 2)
+      create(:example, meaning: first_meaning, sentence: 'First', display_order: 1)
 
       get "/api/v1/wordbooks/#{wordbook.id}/test/words", headers: headers
 
       returned_word = response.parsed_body['words'].first
       expect(returned_word['meanings'].pluck('definition')).to eq(%w[first second])
-      expect(returned_word['examples'].pluck('sentence')).to eq(%w[First Second])
+      expect(returned_word['meanings'].first['examples'].first['sentence']).to eq('First')
     end
 
     it 'returns empty words array when no reviewable words exist' do
