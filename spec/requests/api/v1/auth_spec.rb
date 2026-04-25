@@ -188,7 +188,7 @@ RSpec.describe 'Api::V1::Auth', type: :request do
         let!(:wordbook) { create(:wordbook, user: guest_user, title: 'Guest Wordbook') }
         let!(:word) { create(:word, wordbook: wordbook, spelling: 'apple') }
         let!(:meaning) { create(:meaning, word: word, definition: 'りんご') }
-        let!(:example) { create(:example, word: word, sentence: 'I like apples.', translation: 'りんごが好きです。') }
+        let!(:example) { create(:example, meaning: meaning, sentence: 'I like apples.', translation: 'りんごが好きです。') }
         let!(:setting) { create(:setting, user: guest_user) }
 
         it 'converts guest user to Google user and returns ok' do
