@@ -394,10 +394,6 @@ paths:
                       type: string
                     status:
                       $ref: "#/components/schemas/WordStatus"
-                    next_review_at:
-                      type: string
-                      format: date-time
-                      nullable: true
       responses:
         "200":
           description: Updated
