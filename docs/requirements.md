@@ -408,7 +408,7 @@ WordBeetleは、効率的な単語学習を実現する間隔反復学習機能�
 #### Examples（例文）
 
 - [P0] id
-- [P0] word_id
+- [P0] meaning_id
 - [P0] sentence
 - [P0] translation
 - [P0] display_order
