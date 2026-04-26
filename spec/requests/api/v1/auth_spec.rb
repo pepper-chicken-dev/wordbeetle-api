@@ -134,6 +134,34 @@ RSpec.describe 'Api::V1::Auth', type: :request do
       end
     end
 
+    context 'when token is valid and user already exists with stale profile' do
+      let!(:existing_user) do
+        create(
+          :user,
+          provider: 'google',
+          provider_uid: 'google_uid_123',
+          email: 'test@example.com',
+          name: 'Old Name',
+          avatar_url: 'https://example.com/old.jpg'
+        )
+      end
+
+      before do
+        allow(Google::Auth::IDTokens).to receive(:verify_oidc).and_return(google_payload)
+      end
+
+      it 'refreshes name and avatar_url from the payload without changing email' do
+        post '/api/v1/auth/google', headers: { 'Authorization' => 'Bearer valid_token' }
+
+        expect(response).to have_http_status(:ok)
+
+        existing_user.reload
+        expect(existing_user.name).to eq('Test User')
+        expect(existing_user.avatar_url).to eq('https://example.com/avatar.jpg')
+        expect(existing_user.email).to eq('test@example.com')
+      end
+    end
+
     context 'when RecordNotUnique is raised (race condition)' do
       let!(:existing_user) do
         create(:user, provider: 'google', provider_uid: 'google_uid_123', email: 'test@example.com')
@@ -246,7 +274,14 @@ RSpec.describe 'Api::V1::Auth', type: :request do
 
       context 'when Google account already exists (merge)' do
         let!(:google_user) do
-          create(:user, provider: 'google', provider_uid: 'google_uid_123', email: 'test@example.com')
+          create(
+            :user,
+            provider: 'google',
+            provider_uid: 'google_uid_123',
+            email: 'test@example.com',
+            name: 'Old Name',
+            avatar_url: 'https://example.com/old.jpg'
+          )
         end
         let!(:guest_wordbook) { create(:wordbook, user: guest_user, title: 'Guest Wordbook') }
         let!(:guest_word) { create(:word, wordbook: guest_wordbook, spelling: 'banana') }
@@ -301,6 +336,16 @@ RSpec.describe 'Api::V1::Auth', type: :request do
           token = response.parsed_body['token']
           decoded = JsonWebToken.decode(token)
           expect(decoded['sub']).to eq(google_user.id)
+        end
+
+        it 'refreshes the merged-into Google user name and avatar_url from the payload' do
+          post '/api/v1/auth/google',
+               params: { guest_token: guest_token },
+               headers: { 'Authorization' => 'Bearer valid_token' }
+
+          google_user.reload
+          expect(google_user.name).to eq('Test User')
+          expect(google_user.avatar_url).to eq('https://example.com/avatar.jpg')
         end
       end
 

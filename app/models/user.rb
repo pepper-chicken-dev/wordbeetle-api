@@ -37,7 +37,7 @@ class User < ApplicationRecord
       existing_google_user = User.find_by(provider: 'google', provider_uid: google_payload['sub'])
 
       if existing_google_user
-        merge_into_google_user(existing_google_user)
+        merge_into_google_user(existing_google_user, google_payload)
       else
         convert_to_google(google_payload)
       end
@@ -46,6 +46,13 @@ class User < ApplicationRecord
 
   def effective_setting
     setting || Setting.default
+  end
+
+  def sync_google_profile!(google_payload)
+    changes = {}
+    changes[:name] = google_payload['name'] if name != google_payload['name']
+    changes[:avatar_url] = google_payload['picture'] if avatar_url != google_payload['picture']
+    update!(changes) if changes.any?
   end
 
   private
@@ -63,7 +70,8 @@ class User < ApplicationRecord
     MigrationResult.success(self)
   end
 
-  def merge_into_google_user(google_user)
+  def merge_into_google_user(google_user, google_payload)
+    google_user.sync_google_profile!(google_payload)
     wordbooks.update_all(user_id: google_user.id) # rubocop:disable Rails/SkipsModelValidations
     setting.update!(user_id: google_user.id) if setting.present? && google_user.setting.blank?
     reload.destroy!
