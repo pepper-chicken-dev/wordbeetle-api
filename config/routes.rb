@@ -24,6 +24,7 @@ Rails.application.routes.draw do
         end
       end
       resource :setting, only: %i[show create update destroy]
+      resource :user, only: [:destroy]
     end
   end
 
