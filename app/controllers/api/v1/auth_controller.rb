@@ -41,6 +41,8 @@ module Api
           user = User.find_by!(provider: 'google', provider_uid: payload['sub'])
         end
 
+        user.sync_google_profile!(payload)
+
         render json: { user: JSON.parse(UserResource.new(user, params: { type: :google }).serialize),
                        token: JsonWebToken.encode(user.id) },
                status: :ok
