@@ -289,12 +289,10 @@ paths:
               properties:
                 word:
                   type: object
-                  required: [spelling, status]
+                  required: [spelling]
                   properties:
                     spelling:
                       type: string
-                    status:
-                      $ref: "#/components/schemas/WordStatus"
                     meanings_attributes:
                       type: array
                       description: Optional nested meanings to create with the word
@@ -971,38 +969,6 @@ components:
 
   schemas:
     # ──── Models ────
-    User:
-      type: object
-      properties:
-        id:
-          type: integer
-        provider:
-          type: string
-          enum: [google, guest]
-        provider_uid:
-          type: string
-          nullable: true
-        email:
-          type: string
-          nullable: true
-        name:
-          type: string
-          nullable: true
-        avatar_url:
-          type: string
-          nullable: true
-        guest_expires_at:
-          type: string
-          format: date-time
-          nullable: true
-          description: Present only for guest users (expires 7 days after creation)
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-
     Wordbook:
       type: object
       properties:
@@ -1083,19 +1049,11 @@ components:
       properties:
         id:
           type: integer
-        word_id:
-          type: integer
         definition:
           type: string
         display_order:
           type: integer
           minimum: 1
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
 
     MeaningWithExamples:
       allOf:
@@ -1113,8 +1071,6 @@ components:
       properties:
         id:
           type: integer
-        meaning_id:
-          type: integer
         sentence:
           type: string
         translation:
@@ -1122,12 +1078,6 @@ components:
         display_order:
           type: integer
           minimum: 1
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
 
     Setting:
       type: object
@@ -1135,22 +1085,12 @@ components:
         Interval fields are returned as {days, hours, minutes} objects
         (converted from PostgreSQL interval internally).
       properties:
-        id:
-          type: integer
-        user_id:
-          type: integer
         hard_interval:
           $ref: "#/components/schemas/IntervalOutput"
         uncertain_interval:
           $ref: "#/components/schemas/IntervalOutput"
         easy_interval:
           $ref: "#/components/schemas/IntervalOutput"
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
 
     IntervalInput:
       type: object
