@@ -862,6 +862,24 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
+  # ──────────────── User (singular resource) ────────────────
+  /api/v1/user:
+    delete:
+      tags: [Users]
+      summary: Delete the current user account
+      description: |
+        Permanently deletes the authenticated user and all associated data
+        (wordbooks, words, meanings, examples, settings) via cascading deletes.
+        The JWT token is not revoked server-side, but subsequent requests with
+        the orphaned token will return 401.
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: No Content
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
 components:
   securitySchemes:
     googleIdToken:
