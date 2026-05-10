@@ -374,7 +374,19 @@ paths:
           $ref: "#/components/responses/NotFound"
     patch:
       tags: [Words]
-      summary: Update a word
+      summary: Update a word with optional nested meanings and examples
+      description: |
+        Updates a word. Optionally accepts nested `meanings_attributes`
+        (with `examples_attributes` inside each meaning) to update or create
+        related records in a single atomic transaction.
+
+        For each nested item, supplying `id` updates the existing record
+        (only the fields you include are changed); omitting `id` creates a
+        new record (all required fields must be provided).
+
+        Deletion is not supported through nested attributes — use the
+        dedicated `DELETE /meanings/{id}` and `DELETE /examples/{id}`
+        endpoints instead.
       security:
         - bearerAuth: []
       requestBody:
@@ -392,6 +404,40 @@ paths:
                       type: string
                     status:
                       $ref: "#/components/schemas/WordStatus"
+                    meanings_attributes:
+                      type: array
+                      description: |
+                        Nested meanings to update or create. Include `id` to update an
+                        existing meaning; omit `id` to create a new one.
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            description: ID of the existing meaning to update. Omit when creating a new meaning.
+                          definition:
+                            type: string
+                          display_order:
+                            type: integer
+                            minimum: 1
+                          examples_attributes:
+                            type: array
+                            description: |
+                              Nested examples to update or create. Include `id` to update an
+                              existing example; omit `id` to create a new one.
+                            items:
+                              type: object
+                              properties:
+                                id:
+                                  type: integer
+                                  description: ID of the existing example to update. Omit when creating a new example.
+                                sentence:
+                                  type: string
+                                translation:
+                                  type: string
+                                display_order:
+                                  type: integer
+                                  minimum: 1
       responses:
         "200":
           description: Updated
