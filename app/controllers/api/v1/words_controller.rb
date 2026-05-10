@@ -65,8 +65,10 @@ module Api
       def update_word_params
         params.expect(word: [
                         :spelling, :status,
-                        { meanings_attributes: [[:definition, :display_order,
-                                                 { examples_attributes: [%i[sentence translation display_order]] }]] }
+                        { meanings_attributes: [
+                          [:id, :definition, :display_order,
+                           { examples_attributes: [%i[id sentence translation display_order]] }]
+                        ] }
                       ])
       end
     end

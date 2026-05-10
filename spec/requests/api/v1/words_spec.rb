@@ -334,6 +334,61 @@ RSpec.describe 'Api::V1::Words', type: :request do
         end
       end
     end
+
+    context 'with meanings_attributes' do
+      it 'updates an existing meaning when id is supplied' do
+        meaning = create(:meaning, word: word, definition: 'old', display_order: 1)
+
+        patch "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}",
+              params: { word: { meanings_attributes: [{ id: meaning.id, definition: 'new' }] } },
+              headers: headers
+
+        expect(response).to have_http_status(:ok)
+        expect(meaning.reload.definition).to eq('new')
+      end
+
+      it 'creates a new meaning when id is omitted' do
+        expect do
+          patch "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}",
+                params: { word: { meanings_attributes: [{ definition: 'added', display_order: 1 }] } },
+                headers: headers
+        end.to change(word.meanings, :count).by(1)
+
+        expect(response).to have_http_status(:ok)
+        expect(word.meanings.last.definition).to eq('added')
+      end
+
+      it 'updates an existing example when id is supplied in nested examples_attributes' do
+        meaning = create(:meaning, word: word, definition: 'def', display_order: 1)
+        example = create(:example, meaning: meaning, sentence: 'old sentence',
+                                   translation: 'old', display_order: 1)
+
+        patch "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}",
+              params: { word: { meanings_attributes: [
+                { id: meaning.id, examples_attributes: [{ id: example.id, sentence: 'new sentence' }] }
+              ] } },
+              headers: headers
+
+        expect(response).to have_http_status(:ok)
+        expect(example.reload.sentence).to eq('new sentence')
+      end
+
+      it 'creates a new example for an existing meaning when example id is omitted' do
+        meaning = create(:meaning, word: word, definition: 'def', display_order: 1)
+
+        expect do
+          patch "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}",
+                params: { word: { meanings_attributes: [
+                  { id: meaning.id, examples_attributes: [
+                    { sentence: 'added', translation: 'trans', display_order: 1 }
+                  ] }
+                ] } },
+                headers: headers
+        end.to change(meaning.examples, :count).by(1)
+
+        expect(response).to have_http_status(:ok)
+      end
+    end
   end
 
   describe 'DELETE /api/v1/wordbooks/:wordbook_id/words/:id' do
