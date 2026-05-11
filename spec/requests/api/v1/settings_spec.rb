@@ -88,31 +88,55 @@ RSpec.describe 'Api::V1::Settings', type: :request do
   end
 
   describe 'PATCH /api/v1/setting' do
-    let!(:setting) { create(:setting, user: user) }
+    context 'when the user already has a setting' do
+      let!(:setting) { create(:setting, user: user) }
 
-    it 'updates the setting' do
-      patch '/api/v1/setting', params: {
-        setting: {
-          hard_interval: { days: 2, hours: 0, minutes: 0 }
-        }
-      }, headers: headers
+      it 'updates the setting without creating a new record' do
+        expect do
+          patch '/api/v1/setting', params: {
+            setting: {
+              hard_interval: { days: 2, hours: 0, minutes: 0 }
+            }
+          }, headers: headers
+        end.not_to change(Setting, :count)
 
-      expect(response).to have_http_status(:ok)
-      expect(response.parsed_body['hard_interval']).to eq({ 'days' => 2, 'hours' => 0, 'minutes' => 0 })
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['hard_interval']).to eq({ 'days' => 2, 'hours' => 0, 'minutes' => 0 })
+      end
+
+      context 'with intervals not in ascending order' do
+        it 'returns unprocessable_content with error message' do
+          patch '/api/v1/setting', params: {
+            setting: {
+              hard_interval: { days: 1, hours: 0, minutes: 0 },
+              uncertain_interval: { days: 10, hours: 0, minutes: 0 },
+              easy_interval: { days: 3, hours: 0, minutes: 0 }
+            }
+          }, headers: headers
+
+          expect(response).to have_http_status(:unprocessable_content)
+          expect(response.parsed_body['error']).to eq('Unprocessable entity')
+        end
+      end
     end
 
-    context 'with intervals not in ascending order' do
-      it 'returns unprocessable_content with error message' do
-        patch '/api/v1/setting', params: {
+    context 'when the user has no setting yet' do
+      it 'creates a setting and returns it' do
+        params = {
           setting: {
-            hard_interval: { days: 1, hours: 0, minutes: 0 },
-            uncertain_interval: { days: 10, hours: 0, minutes: 0 },
-            easy_interval: { days: 3, hours: 0, minutes: 0 }
+            hard_interval: { days: 1, hours: 0, minutes: 1 },
+            uncertain_interval: { days: 3, hours: 0, minutes: 0 },
+            easy_interval: { days: 7, hours: 0, minutes: 0 }
           }
-        }, headers: headers
+        }
 
-        expect(response).to have_http_status(:unprocessable_content)
-        expect(response.parsed_body['error']).to eq('Unprocessable entity')
+        expect do
+          patch '/api/v1/setting', params: params, headers: headers
+        end.to change(Setting, :count).by(1)
+
+        expect(response).to have_http_status(:ok)
+        expect(Setting.last.user_id).to eq(user.id)
+        expect(response.parsed_body['hard_interval']).to eq({ 'days' => 1, 'hours' => 0, 'minutes' => 1 })
       end
     end
   end

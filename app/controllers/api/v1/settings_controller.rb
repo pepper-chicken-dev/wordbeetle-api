@@ -1,7 +1,7 @@
 module Api
   module V1
     class SettingsController < ApplicationController
-      before_action :set_setting, only: %i[update destroy]
+      before_action :set_setting, only: %i[destroy]
 
       def show
         render json: SettingResource.new(current_user.effective_setting).serialize
@@ -14,8 +14,10 @@ module Api
       end
 
       def update
-        @setting.update!(build_setting_params)
-        render json: SettingResource.new(@setting).serialize
+        setting = current_user.setting || current_user.build_setting
+        setting.assign_attributes(build_setting_params)
+        setting.save!
+        render json: SettingResource.new(setting).serialize
       end
 
       def destroy
