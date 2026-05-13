@@ -335,6 +335,20 @@ RSpec.describe 'Api::V1::Words', type: :request do
       end
     end
 
+    context 'when the same status is re-selected' do
+      it 'resets next_review_at to now + interval' do
+        word = create(:word, wordbook: wordbook, status: 'hard', next_review_at: 5.days.from_now)
+
+        freeze_time do
+          patch "/api/v1/wordbooks/#{wordbook.id}/words/#{word.id}",
+                params: { word: { status: 'hard' } }, headers: headers
+
+          expect(response).to have_http_status(:ok)
+          expect(Time.zone.parse(response.parsed_body['next_review_at'])).to eq(1.day.from_now)
+        end
+      end
+    end
+
     context 'with meanings_attributes' do
       it 'updates an existing meaning when id is supplied' do
         meaning = create(:meaning, word: word, definition: 'old', display_order: 1)
