@@ -906,8 +906,8 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
-  # ──────────────── User (singular resource) ────────────────
-  /api/v1/user:
+  # ──────────────── Current User ────────────────
+  /api/v1/users/me:
     delete:
       tags: [Users]
       summary: Delete the current user account

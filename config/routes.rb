@@ -24,7 +24,7 @@ Rails.application.routes.draw do
         end
       end
       resource :setting, only: %i[show create update destroy]
-      resource :user, only: [:destroy]
+      delete 'users/me', to: 'users#destroy', as: :user
     end
   end
 
