@@ -85,6 +85,50 @@ RSpec.describe Reviewable, type: :model do
       end
     end
 
+    context 'when reselecting the same status (hard) with future next_review_at' do
+      let(:word) { create(:word, wordbook: wordbook, status: 'hard', next_review_at: 5.days.from_now) }
+
+      it 'resets next_review_at to now + hard_interval' do
+        freeze_time do
+          word.update!(status: 'hard')
+          expect(word.next_review_at).to eq(1.day.from_now)
+        end
+      end
+    end
+
+    context 'when reselecting the same status (uncertain) with future next_review_at' do
+      let(:word) { create(:word, wordbook: wordbook, status: 'uncertain', next_review_at: 10.days.from_now) }
+
+      it 'resets next_review_at to now + uncertain_interval' do
+        freeze_time do
+          word.update!(status: 'uncertain')
+          expect(word.next_review_at).to eq(3.days.from_now)
+        end
+      end
+    end
+
+    context 'when reselecting the same status (easy) with future next_review_at' do
+      let(:word) { create(:word, wordbook: wordbook, status: 'easy', next_review_at: 20.days.from_now) }
+
+      it 'resets next_review_at to now + easy_interval' do
+        freeze_time do
+          word.update!(status: 'easy')
+          expect(word.next_review_at).to eq(7.days.from_now)
+        end
+      end
+    end
+
+    context 'when reselecting the same status with past next_review_at' do
+      let(:word) { create(:word, wordbook: wordbook, status: 'hard', next_review_at: 2.days.ago) }
+
+      it 'resets next_review_at to now + interval' do
+        freeze_time do
+          word.update!(status: 'hard')
+          expect(word.next_review_at).to eq(1.day.from_now)
+        end
+      end
+    end
+
     context 'with custom user settings' do
       let!(:setting) do
         create(:setting, user: user, hard_interval: 2.days, uncertain_interval: 4.days, easy_interval: 10.days)
